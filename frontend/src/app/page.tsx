@@ -1,3 +1,7 @@
+import { Suspense } from "react";
+
+import { ApiStatus, ApiStatusFallback } from "@/components/api-status";
+
 const focusAreas = [
   {
     title: "Career copilot",
@@ -51,9 +55,11 @@ export default function Home() {
           </div>
 
           <aside className="rounded-3xl border border-[#d9e1da] bg-white p-6 shadow-[0_18px_60px_rgba(28,61,43,0.08)]">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <p className="font-semibold">Today&apos;s focus</p>
-              <span className="size-2 rounded-full bg-[#66a97d]" aria-label="Ready" />
+              <Suspense fallback={<ApiStatusFallback />}>
+                <ApiStatus />
+              </Suspense>
             </div>
             <p className="mt-5 text-2xl font-medium tracking-[-0.02em]">
               What would make this week feel like progress?

@@ -18,6 +18,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+The dashboard checks the FastAPI health endpoint at `http://localhost:8000` by default. To use a different backend address, copy `.env.example` to `.env.local` and update `API_URL`.
+
 ## Validate changes
 
 ```bash
