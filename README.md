@@ -29,3 +29,25 @@ career-os/
 ```
 
 Development will proceed in small, working increments. See [docs/ROADMAP.md](docs/ROADMAP.md) for the planned checkpoints.
+
+## Local infrastructure
+
+Docker Compose runs local development services from the repository root. Start PostgreSQL with:
+
+```bash
+docker compose up -d postgres
+```
+
+Check its status:
+
+```bash
+docker compose ps
+```
+
+Stop the container without deleting its data:
+
+```bash
+docker compose down
+```
+
+PostgreSQL uses a named Docker volume, so local data survives normal container restarts. The default credentials in `compose.yaml` are intended only for local development and can be overridden in an ignored root `.env` file.
