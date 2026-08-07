@@ -17,16 +17,35 @@ Install the application and development dependencies:
 python -m pip install -e ".[dev]"
 ```
 
+Start PostgreSQL from the repository root:
+
+```bash
+docker compose up -d postgres
+```
+
+Apply pending database migrations from the backend directory:
+
+```bash
+alembic upgrade head
+```
+
 Start the development server:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-The API will be available at [http://localhost:8000](http://localhost:8000), with interactive documentation at [http://localhost:8000/docs](http://localhost:8000/docs).
+The API is available at [http://localhost:8000](http://localhost:8000), with interactive documentation at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+Health endpoints:
+
+- `/health` checks whether FastAPI is running.
+- `/health/database` checks whether FastAPI can query PostgreSQL.
 
 ## Run tests
 
 ```bash
 pytest
 ```
+
+The automated tests mock external infrastructure. A live PostgreSQL connection is verified separately during local setup.
