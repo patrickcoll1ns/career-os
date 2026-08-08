@@ -1,5 +1,5 @@
 import { GoalRestoreControl } from "@/components/goal-restore-control";
-import { formatTargetDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { getArchivedGoals, type Goal } from "@/lib/goals";
 
 function ArchivedGoalCard({ goal }: { goal: Goal }) {
@@ -17,7 +17,7 @@ function ArchivedGoalCard({ goal }: { goal: Goal }) {
         </span>
       </div>
       <p className="mt-4 text-xs font-medium text-[#7a877f]">
-        {formatTargetDate(goal.target_date)}
+        {formatDate(goal.target_date, "No target date")}
       </p>
       <GoalRestoreControl goalId={goal.id} />
     </li>

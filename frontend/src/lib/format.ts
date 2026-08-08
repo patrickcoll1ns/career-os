@@ -1,5 +1,5 @@
-export function formatTargetDate(value: string | null) {
-  if (!value) return "No target date";
+export function formatDate(value: string | null, fallback = "No date set") {
+  if (!value) return fallback;
 
   return new Intl.DateTimeFormat("en-US", {
     month: "short",

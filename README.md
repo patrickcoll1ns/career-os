@@ -90,4 +90,4 @@ See [the architecture](docs/ARCHITECTURE.md) for system boundaries and [the road
 
 ## Current milestone
 
-The goal model, migration, create/list/update/archive/restore API, and goal dashboard are working. Goals are soft-deleted (an `archived_at` timestamp) so history is never lost; the dashboard shows archived goals separately with a restore action. Goal title, description, and target date can be edited in place from the dashboard. Goal management is now functionally complete; the next useful increment is the accomplishments feature, followed by Claude conversations and RAG.
+Roadmap Checkpoint 2 (goals and accomplishments) is complete: structured career data persists across restarts. Goals support create, list, edit, status transitions, and soft-delete archiving with restore. Accomplishments support create and list, recorded as a simple career journal with an optional date. The next useful increment is Checkpoint 3, the persistent Claude-powered career chat.

@@ -2,7 +2,7 @@ import { GoalArchiveControl } from "@/components/goal-archive-control";
 import { GoalEditControls } from "@/components/goal-edit-controls";
 import { GoalForm } from "@/components/goal-form";
 import { GoalStatusControls } from "@/components/goal-status-controls";
-import { formatTargetDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { getGoals, type Goal, type GoalStatus } from "@/lib/goals";
 
 const statusStyles: Record<GoalStatus, string> = {
@@ -28,7 +28,7 @@ function GoalCard({ goal }: { goal: Goal }) {
         </span>
       </div>
       <p className="mt-4 text-xs font-medium text-[#7a877f]">
-        {formatTargetDate(goal.target_date)}
+        {formatDate(goal.target_date, "No target date")}
       </p>
       <GoalEditControls goal={goal} />
       <GoalStatusControls goalId={goal.id} status={goal.status} />
