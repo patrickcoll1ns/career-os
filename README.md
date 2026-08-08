@@ -1,24 +1,26 @@
 # CareerOS
 
-CareerOS is an AI-powered career copilot for planning and documenting career growth. The portfolio MVP currently includes a working dashboard where career goals are stored in PostgreSQL through a FastAPI API and displayed by a Next.js frontend.
+CareerOS is an AI-powered career copilot for planning and documenting career growth. The portfolio MVP currently includes persistent goals and accomplishments plus Claude-powered conversations grounded in that structured career context.
 
-Planned capabilities include personalized guidance, accomplishment tracking, persistent Claude conversations, resume feedback, mock interviews, and retrieval-augmented responses grounded in uploaded career documents.
+Planned capabilities include resume feedback, document-grounded retrieval, mock interviews, and recommendations for what to learn next.
 
 ## Technology
 
 - Next.js, React, TypeScript, and Tailwind CSS
 - FastAPI, SQLAlchemy, Alembic, and Python
 - PostgreSQL 17 in Docker Compose
-- Anthropic Claude API (planned)
+- Anthropic Claude API
 - Chroma vector storage for RAG (planned)
 
 ## How the current app works
 
 ```text
 Browser -> Next.js -> FastAPI -> PostgreSQL
+                         |
+                         `-> Anthropic Claude
 ```
 
-PostgreSQL owns the saved goal data. FastAPI validates requests and contains the application logic. Next.js renders the interface and sends goal actions to FastAPI.
+PostgreSQL owns the saved goals, accomplishments, conversations, and messages. FastAPI validates requests and contains the application logic. Next.js renders the interface and uses server actions to communicate with FastAPI. The Anthropic API key stays in the backend environment and is never sent to browser code.
 
 ## One-time setup
 
@@ -32,7 +34,7 @@ cp .env.example .env
 cp frontend/.env.example frontend/.env.local
 ```
 
-The sample environment values are safe local-development defaults. Add a real Anthropic key only when the Claude integration is implemented. Never commit either copied environment file.
+Replace `ANTHROPIC_API_KEY` in the ignored root `.env` file to enable live copilot replies. You can also override `ANTHROPIC_MODEL`; the local default is Claude Sonnet 5. Never commit either copied environment file.
 
 ## Run the app
 
@@ -56,7 +58,7 @@ Terminal 3 starts Next.js:
 make frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) for the app. FastAPI's interactive API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs).
+Open [http://localhost:3000](http://localhost:3000) for the dashboard and [http://localhost:3000/chat](http://localhost:3000/chat) for the career copilot. FastAPI's interactive API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs).
 
 Stop either development server with `Control-C`. Stop PostgreSQL without deleting saved data with:
 
@@ -90,4 +92,4 @@ See [the architecture](docs/ARCHITECTURE.md) for system boundaries and [the road
 
 ## Current milestone
 
-Roadmap Checkpoint 2 (goals and accomplishments) is complete: structured career data persists across restarts. Goals support create, list, edit, status transitions, and soft-delete archiving with restore. Accomplishments support create and list, recorded as a simple career journal with an optional date. The next useful increment is Checkpoint 3, the persistent Claude-powered career chat.
+Roadmap Checkpoints 0–2 are complete. Checkpoint 3 now has the persistent Claude chat API and web interface: conversations and complete user/assistant exchanges are stored in PostgreSQL, recent history is sent to Claude, and prompts include current non-archived goals and accomplishments. The next checkpoint is document ingestion and RAG, after this chat checkpoint is reviewed and committed.

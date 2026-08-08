@@ -1,4 +1,5 @@
 import uuid
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,23 +22,29 @@ class ConversationRepository:
 
     async def list_all(self) -> list[Conversation]:
         result = await self.session.scalars(
-            select(Conversation).order_by(Conversation.created_at.desc())
+            select(Conversation).order_by(Conversation.updated_at.desc())
         )
         return list(result.all())
 
     async def get(self, conversation_id: uuid.UUID) -> Conversation | None:
         return await self.session.get(Conversation, conversation_id)
 
-    async def add_message(self, message: Message) -> Message:
-        self.session.add(message)
+    async def add_exchange(
+        self,
+        conversation: Conversation,
+        user_message: Message,
+        assistant_message: Message,
+    ) -> None:
+        """Persist a complete user/assistant exchange in one transaction."""
+        conversation.updated_at = datetime.now(UTC)
+        self.session.add_all([user_message, assistant_message])
         await self.session.commit()
-        await self.session.refresh(message)
-        return message
+        await self.session.refresh(conversation)
 
     async def list_messages(self, conversation_id: uuid.UUID) -> list[Message]:
         result = await self.session.scalars(
             select(Message)
             .where(Message.conversation_id == conversation_id)
-            .order_by(Message.created_at.asc())
+            .order_by(Message.created_at.asc(), Message.id.asc())
         )
         return list(result.all())

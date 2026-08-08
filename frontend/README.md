@@ -4,27 +4,29 @@ The CareerOS web interface is built with Next.js, TypeScript, Tailwind CSS, and 
 
 ## Run locally
 
-Install dependencies:
+From the repository root, start PostgreSQL and FastAPI first:
 
 ```bash
-npm install
+make database
+make backend
 ```
 
-Start the development server:
+Then start the frontend in another terminal:
 
 ```bash
-npm run dev
+make frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). The dashboard supports persistent goal and accomplishment tracking, and the career-copilot interface is available at [http://localhost:3000/chat](http://localhost:3000/chat).
 
-The dashboard checks FastAPI at `http://localhost:8000` by default and uses it to create, edit, and list career goals and accomplishments. Start PostgreSQL and FastAPI before testing persistence. To use a different backend address, copy `.env.example` to `.env.local` and update `API_URL`.
+The frontend uses `http://localhost:8000` by default. To use a different backend address, copy `.env.example` to `.env.local` and update the server-only `API_URL` value.
 
 ## Validate changes
 
+From the repository root:
+
 ```bash
-npm run lint
-npm run build
+make frontend-check
 ```
 
-The current interface is a static foundation preview. Backend connectivity and interactive career features will be added in later checkpoints.
+This runs ESLint, TypeScript checking, and the Next.js production build.

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 
 import { AccomplishmentsPanel } from "@/components/accomplishments-panel";
@@ -10,18 +11,21 @@ import { GoalsPanelFallback } from "@/components/goals-panel-fallback";
 const focusAreas = [
   {
     title: "Career copilot",
-    description: "Get guidance grounded in your goals, experience, and documents.",
+    description: "Get guidance grounded in your goals and accomplishments.",
     action: "Start a conversation",
+    href: "/chat",
   },
   {
     title: "Resume review",
     description: "Turn your experience into clear, evidence-based resume feedback.",
     action: "Review your resume",
+    href: null,
   },
   {
     title: "Interview practice",
     description: "Practice role-specific questions and learn from structured feedback.",
     action: "Plan an interview",
+    href: null,
   },
 ];
 
@@ -40,7 +44,7 @@ export default function Home() {
             </span>
           </a>
           <span className="rounded-full border border-[#cfd8d1] bg-white px-3 py-1.5 text-xs font-medium text-[#526158]">
-            Foundation preview
+            MVP in progress
           </span>
         </div>
       </header>
@@ -55,7 +59,7 @@ export default function Home() {
               Make your next career move with the full story in view.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[#58675f]">
-              CareerOS brings your goals, accomplishments, documents, and conversations together so your guidance becomes more useful over time.
+              CareerOS brings your goals, accomplishments, and conversations together so your guidance becomes more useful over time.
             </p>
           </div>
 
@@ -69,9 +73,13 @@ export default function Home() {
             <p className="mt-5 text-2xl font-medium tracking-[-0.02em]">
               What would make this week feel like progress?
             </p>
-            <div className="mt-6 rounded-2xl bg-[#eef3ed] p-4 text-sm leading-6 text-[#4f6156]">
-              Your personalized copilot conversation will live here in an upcoming checkpoint.
-            </div>
+            <Link
+              href="/chat"
+              className="mt-6 block rounded-2xl bg-[#eef3ed] p-4 text-sm leading-6 text-[#4f6156] transition hover:bg-[#e4ede5]"
+            >
+              Talk it through with your career copilot{" "}
+              <span aria-hidden="true">→</span>
+            </Link>
           </aside>
         </section>
 
@@ -86,19 +94,32 @@ export default function Home() {
           </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {focusAreas.map((area, index) => (
-              <article
-                key={area.title}
-                className="group rounded-3xl border border-[#dbe2dc] bg-[#fbfcf9] p-6 transition hover:-translate-y-1 hover:border-[#b8cabd] hover:shadow-[0_14px_40px_rgba(28,61,43,0.08)]"
-              >
-                <span className="grid size-9 place-items-center rounded-full bg-[#e3ede5] text-sm font-semibold text-[#315f44]">
-                  0{index + 1}
-                </span>
-                <h3 className="mt-8 text-xl font-semibold">{area.title}</h3>
-                <p className="mt-3 min-h-18 text-sm leading-6 text-[#65736b]">{area.description}</p>
-                <p className="mt-6 text-sm font-semibold text-[#315f44]">{area.action} <span aria-hidden="true">→</span></p>
-              </article>
-            ))}
+            {focusAreas.map((area, index) => {
+              const cardClassName =
+                "group rounded-3xl border border-[#dbe2dc] bg-[#fbfcf9] p-6 transition hover:-translate-y-1 hover:border-[#b8cabd] hover:shadow-[0_14px_40px_rgba(28,61,43,0.08)]";
+              const cardContent = (
+                <>
+                  <span className="grid size-9 place-items-center rounded-full bg-[#e3ede5] text-sm font-semibold text-[#315f44]">
+                    0{index + 1}
+                  </span>
+                  <h3 className="mt-8 text-xl font-semibold">{area.title}</h3>
+                  <p className="mt-3 min-h-18 text-sm leading-6 text-[#65736b]">{area.description}</p>
+                  <p className="mt-6 text-sm font-semibold text-[#315f44]">
+                    {area.action} <span aria-hidden="true">→</span>
+                  </p>
+                </>
+              );
+
+              return area.href ? (
+                <Link key={area.title} href={area.href} className={cardClassName}>
+                  {cardContent}
+                </Link>
+              ) : (
+                <article key={area.title} className={cardClassName}>
+                  {cardContent}
+                </article>
+              );
+            })}
           </div>
         </section>
 

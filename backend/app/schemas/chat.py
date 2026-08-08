@@ -29,7 +29,7 @@ class ConversationRead(BaseModel):
 
 
 class ConversationWithMessages(ConversationRead):
-    messages: list[MessageRead] = []
+    messages: list[MessageRead] = Field(default_factory=list)
 
 
 class SendMessageRequest(BaseModel):

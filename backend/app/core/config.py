@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     backend_cors_origins: str = "http://localhost:3000"
     database_url: str = "postgresql+asyncpg://careeros:careeros@localhost:5432/careeros"
     anthropic_api_key: str | None = None
-    anthropic_model: str = "claude-opus-5"
+    anthropic_model: str = "claude-sonnet-5"
 
     model_config = SettingsConfigDict(
         env_file=(BACKEND_DIRECTORY / ".env", REPOSITORY_ROOT / ".env"),
