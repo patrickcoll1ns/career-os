@@ -56,6 +56,15 @@ Accomplishment endpoints:
 - `POST /accomplishments` validates and creates a career accomplishment.
 - `GET /accomplishments` lists accomplishments with the newest first.
 
+Chat endpoints:
+
+- `POST /chat/conversations` starts a new career-coaching conversation.
+- `GET /chat/conversations` lists conversations with the newest first.
+- `GET /chat/conversations/{conversation_id}` returns a conversation with its full message history.
+- `POST /chat/conversations/{conversation_id}/messages` sends a user message and returns the conversation with Claude's reply appended.
+
+Chat requires `ANTHROPIC_API_KEY` in the backend environment (see `.env.example`). Without a key, sending a message returns `502 Bad Gateway`; creating and listing conversations still work.
+
 ## Run tests
 
 ```bash
