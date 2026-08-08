@@ -3,7 +3,6 @@ from fastapi.testclient import TestClient
 from app.api.routes import health as health_routes
 from app.main import app
 
-
 client = TestClient(app)
 
 

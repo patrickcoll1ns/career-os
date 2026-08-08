@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 from app.db.session import database_is_ready
 
-
 router = APIRouter(tags=["health"])
 
 

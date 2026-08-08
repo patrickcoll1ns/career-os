@@ -1,17 +1,19 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BACKEND_DIRECTORY = Path(__file__).resolve().parents[2]
+REPOSITORY_ROOT = BACKEND_DIRECTORY.parent
 
 
 class Settings(BaseSettings):
     app_name: str = "CareerOS API"
     backend_cors_origins: str = "http://localhost:3000"
-    database_url: str = (
-        "postgresql+asyncpg://careeros:careeros@localhost:5432/careeros"
-    )
+    database_url: str = "postgresql+asyncpg://careeros:careeros@localhost:5432/careeros"
 
     model_config = SettingsConfigDict(
-        env_file=(".env", "../.env"),
+        env_file=(BACKEND_DIRECTORY / ".env", REPOSITORY_ROOT / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )

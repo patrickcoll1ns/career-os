@@ -21,6 +21,7 @@ dependencies = [
 dev = [
   "httpx2>=2.9,<3.0",
   "pytest>=8.4,<10.0",
+  "ruff>=0.12,<1.0",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -29,3 +30,14 @@ packages = ["app"]
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+src = ["."]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/versions/*.py" = ["I001"]

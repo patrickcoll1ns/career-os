@@ -9,7 +9,6 @@ from app.repositories.goals import GoalRepository
 from app.schemas.goal import GoalCreate, GoalRead, GoalUpdate
 from app.services.goals import GoalService
 
-
 router = APIRouter(prefix="/goals", tags=["goals"])
 DatabaseSession = Annotated[AsyncSession, Depends(get_database_session)]
 

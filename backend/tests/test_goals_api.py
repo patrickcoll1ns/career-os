@@ -1,5 +1,5 @@
-import uuid
 import asyncio
+import uuid
 from datetime import UTC, date, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -11,7 +11,6 @@ from app.main import app
 from app.repositories.goals import GoalRepository
 from app.schemas.goal import GoalCreate
 from app.services.goals import GoalService
-
 
 client = TestClient(app)
 

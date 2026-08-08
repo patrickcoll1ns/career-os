@@ -12,7 +12,6 @@ from app.repositories.goals import GoalRepository
 from app.schemas.goal import GoalStatus, GoalUpdate
 from app.services.goals import GoalService
 
-
 client = TestClient(app)
 
 

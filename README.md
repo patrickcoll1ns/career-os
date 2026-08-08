@@ -1,53 +1,93 @@
 # CareerOS
 
-CareerOS is an AI-powered career copilot that helps people plan and document their career growth. It will provide personalized guidance, resume feedback, mock interviews, goal and accomplishment tracking, and recommendations for what to learn next.
+CareerOS is an AI-powered career copilot for planning and documenting career growth. The portfolio MVP currently includes a working dashboard where career goals are stored in PostgreSQL through a FastAPI API and displayed by a Next.js frontend.
 
-The copilot will use retrieval-augmented generation (RAG) so its answers can be grounded in the user's uploaded documents and relevant conversation history.
+Planned capabilities include personalized guidance, accomplishment tracking, persistent Claude conversations, resume feedback, mock interviews, and retrieval-augmented responses grounded in uploaded career documents.
 
-## Planned technology
+## Technology
 
-- Next.js and TypeScript frontend
-- FastAPI and Python backend
-- PostgreSQL primary database
-- ChromaDB vector database
-- Anthropic Claude API
-- Docker Compose for local services
+- Next.js, React, TypeScript, and Tailwind CSS
+- FastAPI, SQLAlchemy, Alembic, and Python
+- PostgreSQL 17 in Docker Compose
+- Anthropic Claude API (planned)
+- Chroma vector storage for RAG (planned)
 
-## Project status
-
-The project is currently in its foundation phase. The architecture and incremental implementation plan are documented before application code is introduced.
-
-## Planned repository layout
+## How the current app works
 
 ```text
-career-os/
+Browser -> Next.js -> FastAPI -> PostgreSQL
+```
+
+PostgreSQL owns the saved goal data. FastAPI validates requests and contains the application logic. Next.js renders the interface and sends goal actions to FastAPI.
+
+## One-time setup
+
+You need Node.js, Python 3.12 or newer, Docker Desktop, and `make`. On macOS, `make` is included with the Xcode command-line tools.
+
+From the repository root:
+
+```bash
+make setup
+cp .env.example .env
+cp frontend/.env.example frontend/.env.local
+```
+
+The sample environment values are safe local-development defaults. Add a real Anthropic key only when the Claude integration is implemented. Never commit either copied environment file.
+
+## Run the app
+
+Keep Docker Desktop open, then use three VS Code terminals from the repository root.
+
+Terminal 1 starts PostgreSQL and applies database migrations:
+
+```bash
+make database
+```
+
+Terminal 2 starts FastAPI:
+
+```bash
+make backend
+```
+
+Terminal 3 starts Next.js:
+
+```bash
+make frontend
+```
+
+Open [http://localhost:3000](http://localhost:3000) for the app. FastAPI's interactive API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+Stop either development server with `Control-C`. Stop PostgreSQL without deleting saved data with:
+
+```bash
+make database-stop
+```
+
+## Quality checks
+
+Run all backend and frontend checks from the repository root:
+
+```bash
+make check
+```
+
+This checks Python formatting and lint rules, runs backend tests, lints the frontend, and creates a production frontend build.
+
+## Repository layout
+
+```text
+career-os-app/
+├── backend/         # FastAPI application, migrations, and tests
+├── docs/            # Architecture decisions and roadmap
 ├── frontend/        # Next.js application
-├── backend/         # FastAPI application
-├── docs/            # Architecture and roadmap
-├── compose.yaml     # Local PostgreSQL and ChromaDB services
+├── compose.yaml     # Local PostgreSQL service
+├── Makefile         # Short, repeatable development commands
 └── README.md
 ```
 
-Development will proceed in small, working increments. See [docs/ROADMAP.md](docs/ROADMAP.md) for the planned checkpoints.
+See [the architecture](docs/ARCHITECTURE.md) for system boundaries and [the roadmap](docs/ROADMAP.md) for the incremental build plan.
 
-## Local infrastructure
+## Current milestone
 
-Docker Compose runs local development services from the repository root. Start PostgreSQL with:
-
-```bash
-docker compose up -d postgres
-```
-
-Check its status:
-
-```bash
-docker compose ps
-```
-
-Stop the container without deleting its data:
-
-```bash
-docker compose down
-```
-
-PostgreSQL uses a named Docker volume, so local data survives normal container restarts. The default credentials in `compose.yaml` are intended only for local development and can be overridden in an ignored root `.env` file.
+The goal model, migration, create/list/update API, and goal dashboard are working. The next useful increment is completing the goal-management experience before introducing Claude conversations and RAG.
