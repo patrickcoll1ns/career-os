@@ -1,11 +1,12 @@
+import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_database_session
 from app.repositories.goals import GoalRepository
-from app.schemas.goal import GoalCreate, GoalRead
+from app.schemas.goal import GoalCreate, GoalRead, GoalUpdate
 from app.services.goals import GoalService
 
 
@@ -33,3 +34,19 @@ async def create_goal(
 async def list_goals(service: GoalServiceDependency) -> list[GoalRead]:
     goals = await service.list_all()
     return [GoalRead.model_validate(goal) for goal in goals]
+
+
+@router.patch("/{goal_id}", response_model=GoalRead)
+async def update_goal(
+    goal_id: uuid.UUID,
+    goal_data: GoalUpdate,
+    service: GoalServiceDependency,
+) -> GoalRead:
+    goal = await service.update(goal_id, goal_data)
+    if goal is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Goal not found",
+        )
+
+    return GoalRead.model_validate(goal)

@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,3 +23,11 @@ class GoalRepository:
             select(Goal).order_by(Goal.created_at.desc())
         )
         return list(result.all())
+
+    async def get(self, goal_id: uuid.UUID) -> Goal | None:
+        return await self.session.get(Goal, goal_id)
+
+    async def save(self, goal: Goal) -> Goal:
+        await self.session.commit()
+        await self.session.refresh(goal)
+        return goal

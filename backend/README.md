@@ -46,6 +46,7 @@ Goal endpoints:
 
 - `POST /goals` validates and creates a career goal.
 - `GET /goals` lists goals with the newest first.
+- `PATCH /goals/{goal_id}` updates selected fields on an existing goal.
 
 ## Run tests
 
