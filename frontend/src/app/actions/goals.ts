@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createGoal } from "@/lib/goals";
+import {
+  createGoal,
+  type GoalStatus,
+  updateGoalStatus,
+} from "@/lib/goals";
 
 export type GoalFormState = {
   status: "idle" | "success" | "error";
@@ -33,6 +37,31 @@ export async function createGoalAction(
     return {
       status: "error",
       message: "Could not save the goal. Make sure the FastAPI server is running.",
+    };
+  }
+}
+
+const goalStatuses: GoalStatus[] = ["active", "paused", "completed"];
+
+export async function updateGoalStatusAction(
+  _previousState: GoalFormState,
+  formData: FormData,
+): Promise<GoalFormState> {
+  const goalId = String(formData.get("goalId") ?? "");
+  const status = String(formData.get("status") ?? "") as GoalStatus;
+
+  if (!goalId || !goalStatuses.includes(status)) {
+    return { status: "error", message: "That goal update is not valid." };
+  }
+
+  try {
+    await updateGoalStatus(goalId, status);
+    revalidatePath("/");
+    return { status: "success", message: "Goal updated." };
+  } catch {
+    return {
+      status: "error",
+      message: "Could not update the goal. Make sure FastAPI is running.",
     };
   }
 }

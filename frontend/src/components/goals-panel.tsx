@@ -1,5 +1,6 @@
 import { GoalForm } from "@/components/goal-form";
-import { getGoals, type Goal } from "@/lib/goals";
+import { GoalStatusControls } from "@/components/goal-status-controls";
+import { getGoals, type Goal, type GoalStatus } from "@/lib/goals";
 
 function formatTargetDate(value: string | null) {
   if (!value) return "No target date";
@@ -12,6 +13,12 @@ function formatTargetDate(value: string | null) {
   }).format(new Date(`${value}T00:00:00Z`));
 }
 
+const statusStyles: Record<GoalStatus, string> = {
+  active: "bg-[#e4efe7] text-[#397454]",
+  paused: "bg-[#f4ecd9] text-[#80672d]",
+  completed: "bg-[#e5e9f4] text-[#4b5f88]",
+};
+
 function GoalCard({ goal }: { goal: Goal }) {
   return (
     <li className="rounded-2xl border border-[#dce4dd] bg-white p-5">
@@ -22,13 +29,16 @@ function GoalCard({ goal }: { goal: Goal }) {
             <p className="mt-2 text-sm leading-6 text-[#69766e]">{goal.description}</p>
           ) : null}
         </div>
-        <span className="shrink-0 rounded-full bg-[#e4efe7] px-2.5 py-1 text-xs font-semibold capitalize text-[#397454]">
+        <span
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${statusStyles[goal.status]}`}
+        >
           {goal.status}
         </span>
       </div>
       <p className="mt-4 text-xs font-medium text-[#7a877f]">
         {formatTargetDate(goal.target_date)}
       </p>
+      <GoalStatusControls goalId={goal.id} status={goal.status} />
     </li>
   );
 }
