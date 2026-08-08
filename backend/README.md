@@ -42,6 +42,11 @@ Health endpoints:
 - `/health` checks whether FastAPI is running.
 - `/health/database` checks whether FastAPI can query PostgreSQL.
 
+Goal endpoints:
+
+- `POST /goals` validates and creates a career goal.
+- `GET /goals` lists goals with the newest first.
+
 ## Run tests
 
 ```bash
