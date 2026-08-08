@@ -47,6 +47,14 @@ Goal endpoints:
 - `POST /goals` validates and creates a career goal.
 - `GET /goals` lists goals with the newest first.
 - `PATCH /goals/{goal_id}` updates selected fields on an existing goal.
+- `POST /goals/{goal_id}/archive` soft-deletes a goal.
+- `POST /goals/{goal_id}/restore` restores an archived goal.
+- `GET /goals/archived` lists archived goals.
+
+Accomplishment endpoints:
+
+- `POST /accomplishments` validates and creates a career accomplishment.
+- `GET /accomplishments` lists accomplishments with the newest first.
 
 ## Run tests
 

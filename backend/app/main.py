@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.routes.accomplishments import router as accomplishments_router
 from app.api.routes.goals import router as goals_router
 from app.api.routes.health import router as health_router
 from app.core.config import settings
@@ -33,6 +34,7 @@ def create_app() -> FastAPI:
     )
     application.include_router(health_router)
     application.include_router(goals_router)
+    application.include_router(accomplishments_router)
 
     return application
 
