@@ -1,4 +1,5 @@
 import { GoalArchiveControl } from "@/components/goal-archive-control";
+import { GoalEditControls } from "@/components/goal-edit-controls";
 import { GoalForm } from "@/components/goal-form";
 import { GoalStatusControls } from "@/components/goal-status-controls";
 import { formatTargetDate } from "@/lib/format";
@@ -29,6 +30,7 @@ function GoalCard({ goal }: { goal: Goal }) {
       <p className="mt-4 text-xs font-medium text-[#7a877f]">
         {formatTargetDate(goal.target_date)}
       </p>
+      <GoalEditControls goal={goal} />
       <GoalStatusControls goalId={goal.id} status={goal.status} />
       <GoalArchiveControl goalId={goal.id} />
     </li>

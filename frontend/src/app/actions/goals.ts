@@ -7,6 +7,7 @@ import {
   createGoal,
   restoreGoal,
   type GoalStatus,
+  updateGoalDetails,
   updateGoalStatus,
 } from "@/lib/goals";
 
@@ -58,6 +59,35 @@ export async function updateGoalStatusAction(
 
   try {
     await updateGoalStatus(goalId, status);
+    revalidatePath("/");
+    return { status: "success", message: "Goal updated." };
+  } catch {
+    return {
+      status: "error",
+      message: "Could not update the goal. Make sure FastAPI is running.",
+    };
+  }
+}
+
+export async function updateGoalDetailsAction(
+  _previousState: GoalFormState,
+  formData: FormData,
+): Promise<GoalFormState> {
+  const goalId = String(formData.get("goalId") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const targetDate = String(formData.get("targetDate") ?? "").trim();
+
+  if (!goalId || !title) {
+    return { status: "error", message: "Add a title for your goal." };
+  }
+
+  try {
+    await updateGoalDetails(goalId, {
+      title,
+      description: description || null,
+      target_date: targetDate || null,
+    });
     revalidatePath("/");
     return { status: "success", message: "Goal updated." };
   } catch {

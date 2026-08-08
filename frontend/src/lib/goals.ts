@@ -65,6 +65,29 @@ export async function createGoal(input: CreateGoalInput): Promise<Goal> {
   return response.json();
 }
 
+export type UpdateGoalDetailsInput = {
+  title: string;
+  description: string | null;
+  target_date: string | null;
+};
+
+export async function updateGoalDetails(
+  goalId: string,
+  input: UpdateGoalDetailsInput,
+): Promise<Goal> {
+  const response = await fetch(`${apiUrl}/goals/${goalId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error("FastAPI could not update the goal.");
+  }
+
+  return response.json();
+}
+
 export async function updateGoalStatus(
   goalId: string,
   status: GoalStatus,

@@ -90,4 +90,4 @@ See [the architecture](docs/ARCHITECTURE.md) for system boundaries and [the road
 
 ## Current milestone
 
-The goal model, migration, create/list/update/archive/restore API, and goal dashboard are working. Goals are soft-deleted (an `archived_at` timestamp) so history is never lost; the dashboard shows archived goals separately with a restore action. The next useful increment is completing the goal-management experience (editable title/description/target date) before introducing Claude conversations and RAG.
+The goal model, migration, create/list/update/archive/restore API, and goal dashboard are working. Goals are soft-deleted (an `archived_at` timestamp) so history is never lost; the dashboard shows archived goals separately with a restore action. Goal title, description, and target date can be edited in place from the dashboard. Goal management is now functionally complete; the next useful increment is the accomplishments feature, followed by Claude conversations and RAG.
