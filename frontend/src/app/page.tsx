@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 
 import { ApiStatus, ApiStatusFallback } from "@/components/api-status";
+import { GoalsPanel } from "@/components/goals-panel";
+import { GoalsPanelFallback } from "@/components/goals-panel-fallback";
 
 const focusAreas = [
   {
@@ -96,6 +98,10 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        <Suspense fallback={<GoalsPanelFallback />}>
+          <GoalsPanel />
+        </Suspense>
       </div>
     </main>
   );
