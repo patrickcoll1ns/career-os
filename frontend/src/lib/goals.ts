@@ -35,6 +35,22 @@ export async function getGoals(): Promise<Goal[] | null> {
   }
 }
 
+export async function getArchivedGoals(): Promise<Goal[] | null> {
+  try {
+    const response = await fetch(`${apiUrl}/goals/archived`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
 export async function createGoal(input: CreateGoalInput): Promise<Goal> {
   const response = await fetch(`${apiUrl}/goals`, {
     method: "POST",
@@ -73,6 +89,18 @@ export async function archiveGoal(goalId: string): Promise<Goal> {
 
   if (!response.ok) {
     throw new Error("FastAPI could not archive the goal.");
+  }
+
+  return response.json();
+}
+
+export async function restoreGoal(goalId: string): Promise<Goal> {
+  const response = await fetch(`${apiUrl}/goals/${goalId}/restore`, {
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error("FastAPI could not restore the goal.");
   }
 
   return response.json();

@@ -114,3 +114,77 @@ def test_goal_service_archive_returns_none_for_missing_goal() -> None:
 
     assert result is None
     repository.save.assert_not_awaited()
+
+
+def test_restore_goal() -> None:
+    goal_id = uuid.uuid4()
+    service = AsyncMock(spec=GoalService)
+    service.restore.return_value = goal_record(id=goal_id, archived_at=None)
+    app.dependency_overrides[get_goal_service] = lambda: service
+
+    try:
+        response = client.post(f"/goals/{goal_id}/restore")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["archived_at"] is None
+    service.restore.assert_awaited_once_with(goal_id)
+
+
+def test_restore_missing_goal_returns_not_found() -> None:
+    goal_id = uuid.uuid4()
+    service = AsyncMock(spec=GoalService)
+    service.restore.return_value = None
+    app.dependency_overrides[get_goal_service] = lambda: service
+
+    try:
+        response = client.post(f"/goals/{goal_id}/restore")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Goal not found"}
+
+
+def test_list_archived_goals() -> None:
+    service = AsyncMock(spec=GoalService)
+    service.list_archived.return_value = [
+        goal_record(archived_at=datetime(2026, 8, 8, 12, tzinfo=UTC)),
+    ]
+    app.dependency_overrides[get_goal_service] = lambda: service
+
+    try:
+        response = client.get("/goals/archived")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0]["archived_at"] is not None
+    service.list_archived.assert_awaited_once()
+
+
+def test_goal_service_restore_clears_archived_at() -> None:
+    goal = goal_record(archived_at=datetime(2026, 8, 8, 12, tzinfo=UTC))
+    repository = AsyncMock(spec=GoalRepository)
+    repository.get.return_value = goal
+    repository.save.side_effect = lambda saved_goal: saved_goal
+    service = GoalService(repository)
+
+    result = asyncio.run(service.restore(goal.id))
+
+    assert result is goal
+    assert goal.archived_at is None
+    repository.save.assert_awaited_once_with(goal)
+
+
+def test_goal_service_restore_returns_none_for_missing_goal() -> None:
+    repository = AsyncMock(spec=GoalRepository)
+    repository.get.return_value = None
+    service = GoalService(repository)
+
+    result = asyncio.run(service.restore(uuid.uuid4()))
+
+    assert result is None
+    repository.save.assert_not_awaited()

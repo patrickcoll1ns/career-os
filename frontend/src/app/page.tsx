@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { ApiStatus, ApiStatusFallback } from "@/components/api-status";
+import { ArchivedGoalsPanel } from "@/components/archived-goals-panel";
 import { GoalsPanel } from "@/components/goals-panel";
 import { GoalsPanelFallback } from "@/components/goals-panel-fallback";
 
@@ -101,6 +102,10 @@ export default function Home() {
 
         <Suspense fallback={<GoalsPanelFallback />}>
           <GoalsPanel />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <ArchivedGoalsPanel />
         </Suspense>
       </div>
     </main>

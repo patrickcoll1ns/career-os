@@ -38,6 +38,12 @@ async def list_goals(
     return [GoalRead.model_validate(goal) for goal in goals]
 
 
+@router.get("/archived", response_model=list[GoalRead])
+async def list_archived_goals(service: GoalServiceDependency) -> list[GoalRead]:
+    goals = await service.list_archived()
+    return [GoalRead.model_validate(goal) for goal in goals]
+
+
 @router.patch("/{goal_id}", response_model=GoalRead)
 async def update_goal(
     goal_id: uuid.UUID,
@@ -60,6 +66,21 @@ async def archive_goal(
     service: GoalServiceDependency,
 ) -> GoalRead:
     goal = await service.archive(goal_id)
+    if goal is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Goal not found",
+        )
+
+    return GoalRead.model_validate(goal)
+
+
+@router.post("/{goal_id}/restore", response_model=GoalRead)
+async def restore_goal(
+    goal_id: uuid.UUID,
+    service: GoalServiceDependency,
+) -> GoalRead:
+    goal = await service.restore(goal_id)
     if goal is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

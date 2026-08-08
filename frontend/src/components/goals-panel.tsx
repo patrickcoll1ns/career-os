@@ -1,18 +1,8 @@
 import { GoalArchiveControl } from "@/components/goal-archive-control";
 import { GoalForm } from "@/components/goal-form";
 import { GoalStatusControls } from "@/components/goal-status-controls";
+import { formatTargetDate } from "@/lib/format";
 import { getGoals, type Goal, type GoalStatus } from "@/lib/goals";
-
-function formatTargetDate(value: string | null) {
-  if (!value) return "No target date";
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(`${value}T00:00:00Z`));
-}
 
 const statusStyles: Record<GoalStatus, string> = {
   active: "bg-[#e4efe7] text-[#397454]",

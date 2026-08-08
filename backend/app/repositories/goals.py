@@ -26,6 +26,15 @@ class GoalRepository:
         result = await self.session.scalars(query)
         return list(result.all())
 
+    async def list_archived(self) -> list[Goal]:
+        query = (
+            select(Goal)
+            .where(Goal.archived_at.is_not(None))
+            .order_by(Goal.archived_at.desc())
+        )
+        result = await self.session.scalars(query)
+        return list(result.all())
+
     async def get(self, goal_id: uuid.UUID) -> Goal | None:
         return await self.session.get(Goal, goal_id)
 

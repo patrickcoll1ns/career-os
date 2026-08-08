@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import {
   archiveGoal,
   createGoal,
+  restoreGoal,
   type GoalStatus,
   updateGoalStatus,
 } from "@/lib/goals";
@@ -85,6 +86,28 @@ export async function archiveGoalAction(
     return {
       status: "error",
       message: "Could not archive the goal. Make sure FastAPI is running.",
+    };
+  }
+}
+
+export async function restoreGoalAction(
+  _previousState: GoalFormState,
+  formData: FormData,
+): Promise<GoalFormState> {
+  const goalId = String(formData.get("goalId") ?? "");
+
+  if (!goalId) {
+    return { status: "error", message: "That goal could not be restored." };
+  }
+
+  try {
+    await restoreGoal(goalId);
+    revalidatePath("/");
+    return { status: "success", message: "Goal restored." };
+  } catch {
+    return {
+      status: "error",
+      message: "Could not restore the goal. Make sure FastAPI is running.",
     };
   }
 }
