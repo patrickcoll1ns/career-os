@@ -51,5 +51,6 @@ class GoalRead(BaseModel):
     description: str | None
     status: GoalStatus
     target_date: date | None
+    archived_at: datetime | None
     created_at: datetime
     updated_at: datetime

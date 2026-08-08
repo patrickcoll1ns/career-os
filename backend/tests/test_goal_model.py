@@ -8,6 +8,7 @@ def test_goal_table_has_expected_columns() -> None:
         "description",
         "status",
         "target_date",
+        "archived_at",
         "created_at",
         "updated_at",
     }

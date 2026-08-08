@@ -1,3 +1,4 @@
+import { GoalArchiveControl } from "@/components/goal-archive-control";
 import { GoalForm } from "@/components/goal-form";
 import { GoalStatusControls } from "@/components/goal-status-controls";
 import { getGoals, type Goal, type GoalStatus } from "@/lib/goals";
@@ -39,6 +40,7 @@ function GoalCard({ goal }: { goal: Goal }) {
         {formatTargetDate(goal.target_date)}
       </p>
       <GoalStatusControls goalId={goal.id} status={goal.status} />
+      <GoalArchiveControl goalId={goal.id} />
     </li>
   );
 }

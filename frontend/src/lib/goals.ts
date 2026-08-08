@@ -8,6 +8,7 @@ export type Goal = {
   description: string | null;
   status: GoalStatus;
   target_date: string | null;
+  archived_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -60,6 +61,18 @@ export async function updateGoalStatus(
 
   if (!response.ok) {
     throw new Error("FastAPI could not update the goal.");
+  }
+
+  return response.json();
+}
+
+export async function archiveGoal(goalId: string): Promise<Goal> {
+  const response = await fetch(`${apiUrl}/goals/${goalId}/archive`, {
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error("FastAPI could not archive the goal.");
   }
 
   return response.json();

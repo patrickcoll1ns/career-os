@@ -30,8 +30,11 @@ async def create_goal(
 
 
 @router.get("", response_model=list[GoalRead])
-async def list_goals(service: GoalServiceDependency) -> list[GoalRead]:
-    goals = await service.list_all()
+async def list_goals(
+    service: GoalServiceDependency,
+    include_archived: bool = False,
+) -> list[GoalRead]:
+    goals = await service.list_all(include_archived=include_archived)
     return [GoalRead.model_validate(goal) for goal in goals]
 
 
@@ -42,6 +45,21 @@ async def update_goal(
     service: GoalServiceDependency,
 ) -> GoalRead:
     goal = await service.update(goal_id, goal_data)
+    if goal is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Goal not found",
+        )
+
+    return GoalRead.model_validate(goal)
+
+
+@router.post("/{goal_id}/archive", response_model=GoalRead)
+async def archive_goal(
+    goal_id: uuid.UUID,
+    service: GoalServiceDependency,
+) -> GoalRead:
+    goal = await service.archive(goal_id)
     if goal is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

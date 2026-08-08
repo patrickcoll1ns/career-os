@@ -18,10 +18,12 @@ class GoalRepository:
         await self.session.refresh(goal)
         return goal
 
-    async def list_all(self) -> list[Goal]:
-        result = await self.session.scalars(
-            select(Goal).order_by(Goal.created_at.desc())
-        )
+    async def list_all(self, *, include_archived: bool = False) -> list[Goal]:
+        query = select(Goal).order_by(Goal.created_at.desc())
+        if not include_archived:
+            query = query.where(Goal.archived_at.is_(None))
+
+        result = await self.session.scalars(query)
         return list(result.all())
 
     async def get(self, goal_id: uuid.UUID) -> Goal | None:

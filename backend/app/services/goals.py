@@ -1,4 +1,5 @@
 import uuid
+from datetime import UTC, datetime
 
 from app.models.goal import Goal
 from app.repositories.goals import GoalRepository
@@ -19,8 +20,8 @@ class GoalService:
         )
         return await self.repository.add(goal)
 
-    async def list_all(self) -> list[Goal]:
-        return await self.repository.list_all()
+    async def list_all(self, *, include_archived: bool = False) -> list[Goal]:
+        return await self.repository.list_all(include_archived=include_archived)
 
     async def update(
         self,
@@ -38,4 +39,12 @@ class GoalService:
         for field, value in updates.items():
             setattr(goal, field, value)
 
+        return await self.repository.save(goal)
+
+    async def archive(self, goal_id: uuid.UUID) -> Goal | None:
+        goal = await self.repository.get(goal_id)
+        if goal is None:
+            return None
+
+        goal.archived_at = datetime.now(UTC)
         return await self.repository.save(goal)

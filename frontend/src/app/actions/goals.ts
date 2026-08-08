@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import {
+  archiveGoal,
   createGoal,
   type GoalStatus,
   updateGoalStatus,
@@ -62,6 +63,28 @@ export async function updateGoalStatusAction(
     return {
       status: "error",
       message: "Could not update the goal. Make sure FastAPI is running.",
+    };
+  }
+}
+
+export async function archiveGoalAction(
+  _previousState: GoalFormState,
+  formData: FormData,
+): Promise<GoalFormState> {
+  const goalId = String(formData.get("goalId") ?? "");
+
+  if (!goalId) {
+    return { status: "error", message: "That goal could not be archived." };
+  }
+
+  try {
+    await archiveGoal(goalId);
+    revalidatePath("/");
+    return { status: "success", message: "Goal archived." };
+  } catch {
+    return {
+      status: "error",
+      message: "Could not archive the goal. Make sure FastAPI is running.",
     };
   }
 }
