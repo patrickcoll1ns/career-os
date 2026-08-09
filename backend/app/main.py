@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.accomplishments import router as accomplishments_router
 from app.api.routes.chat import router as chat_router
+from app.api.routes.documents import router as documents_router
 from app.api.routes.goals import router as goals_router
 from app.api.routes.health import router as health_router
 from app.core.config import settings
@@ -37,6 +38,7 @@ def create_app() -> FastAPI:
     application.include_router(goals_router)
     application.include_router(accomplishments_router)
     application.include_router(chat_router)
+    application.include_router(documents_router)
 
     return application
 

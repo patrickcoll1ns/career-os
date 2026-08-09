@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://careeros:careeros@localhost:5432/careeros"
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-sonnet-5"
+    document_upload_directory: Path = REPOSITORY_ROOT / "data" / "uploads"
+    max_document_size_bytes: int = 5 * 1024 * 1024
 
     model_config = SettingsConfigDict(
         env_file=(BACKEND_DIRECTORY / ".env", REPOSITORY_ROOT / ".env"),
