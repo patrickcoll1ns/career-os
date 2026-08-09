@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ChatMessageForm } from "@/components/chat-message-form";
+import { MarkdownMessage } from "@/components/markdown-message";
 import { formatTimestamp } from "@/lib/format";
 import { getConversation, type Message } from "@/lib/chat";
 
@@ -12,7 +13,11 @@ const roleStyles: Record<Message["role"], string> = {
 function MessageBubble({ message }: { message: Message }) {
   return (
     <li className={`max-w-[85%] rounded-2xl px-4 py-3 ${roleStyles[message.role]}`}>
-      <p className="whitespace-pre-wrap text-sm leading-6">{message.content}</p>
+      {message.role === "assistant" ? (
+        <MarkdownMessage content={message.content} />
+      ) : (
+        <p className="whitespace-pre-wrap text-sm leading-6">{message.content}</p>
+      )}
       <p
         className={`mt-2 text-[11px] font-medium ${
           message.role === "user" ? "text-[#c9d6cd]" : "text-[#8a9690]"
