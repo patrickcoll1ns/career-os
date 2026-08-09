@@ -82,3 +82,6 @@ class LocalDocumentStorage:
 
     def delete(self, storage_key: str) -> None:
         (self.directory / storage_key).unlink(missing_ok=True)
+
+    def path_for(self, storage_key: str) -> Path:
+        return self.directory / storage_key

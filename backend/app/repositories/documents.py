@@ -11,6 +11,12 @@ class DocumentRepository:
         self.session = session
 
     async def add(self, document: Document) -> Document:
+        return await self._save(document)
+
+    async def update(self, document: Document) -> Document:
+        return await self._save(document)
+
+    async def _save(self, document: Document) -> Document:
         self.session.add(document)
         try:
             await self.session.commit()

@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.session import get_database_session
+from app.integrations.document_extractor import DocumentTextExtractor
 from app.integrations.document_storage import (
     DocumentTooLargeError,
     InvalidDocumentError,
@@ -25,6 +26,7 @@ def get_document_service(session: DatabaseSession) -> DocumentService:
             settings.document_upload_directory,
             settings.max_document_size_bytes,
         ),
+        DocumentTextExtractor(),
     )
 
 
