@@ -1,10 +1,12 @@
 import anyio
 from fastapi import UploadFile
 
+from app.integrations.document_chunker import DocumentChunker
 from app.integrations.document_extractor import (
     DocumentExtractionError,
     DocumentTextExtractor,
 )
+from app.integrations.document_index import DocumentVectorIndex
 from app.integrations.document_storage import LocalDocumentStorage
 from app.models.document import Document
 from app.repositories.documents import DocumentRepository
@@ -18,10 +20,14 @@ class DocumentService:
         repository: DocumentRepository,
         storage: LocalDocumentStorage,
         extractor: DocumentTextExtractor,
+        chunker: DocumentChunker,
+        vector_index: DocumentVectorIndex,
     ) -> None:
         self.repository = repository
         self.storage = storage
         self.extractor = extractor
+        self.chunker = chunker
+        self.vector_index = vector_index
 
     async def upload(self, upload: UploadFile) -> Document:
         stored = await self.storage.save(upload)
@@ -56,6 +62,20 @@ class DocumentService:
 
         document.extracted_text = extracted_text
         document.error_message = None
+        chunks = self.chunker.split(extracted_text)
+
+        try:
+            await anyio.to_thread.run_sync(
+                self.vector_index.index,
+                document.id,
+                document.original_filename,
+                chunks,
+            )
+        except Exception:
+            document.status = "failed"
+            document.error_message = "Document vector indexing failed."
+            return await self.repository.update(document)
+
         document.status = "ready"
         return await self.repository.update(document)
 

@@ -5,7 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.session import get_database_session
+from app.integrations.document_chunker import DocumentChunker
 from app.integrations.document_extractor import DocumentTextExtractor
+from app.integrations.document_index import DocumentVectorIndex
 from app.integrations.document_storage import (
     DocumentTooLargeError,
     InvalidDocumentError,
@@ -27,6 +29,12 @@ def get_document_service(session: DatabaseSession) -> DocumentService:
             settings.max_document_size_bytes,
         ),
         DocumentTextExtractor(),
+        DocumentChunker(),
+        DocumentVectorIndex(
+            settings.chroma_host,
+            settings.chroma_port,
+            settings.chroma_collection,
+        ),
     )
 
 

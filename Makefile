@@ -11,7 +11,7 @@ setup:
 	npm --prefix frontend install
 
 database:
-	docker compose up -d --wait postgres
+	docker compose up -d --wait postgres chroma
 	cd backend && .venv/bin/alembic upgrade head
 
 database-stop:

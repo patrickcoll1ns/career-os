@@ -10,7 +10,7 @@ Planned capabilities include resume feedback, document-grounded retrieval, mock 
 - FastAPI, SQLAlchemy, Alembic, and Python
 - PostgreSQL 17 in Docker Compose
 - Anthropic Claude API
-- Chroma vector storage for RAG (planned)
+- Chroma vector storage for document embeddings
 
 ## How the current app works
 
@@ -40,7 +40,7 @@ Replace `ANTHROPIC_API_KEY` in the ignored root `.env` file to enable live copil
 
 Keep Docker Desktop open, then use three VS Code terminals from the repository root.
 
-Terminal 1 starts PostgreSQL and applies database migrations:
+Terminal 1 starts PostgreSQL and ChromaDB, then applies database migrations:
 
 ```bash
 make database
@@ -60,7 +60,7 @@ make frontend
 
 Open [http://localhost:3000](http://localhost:3000) for the dashboard and [http://localhost:3000/chat](http://localhost:3000/chat) for the career copilot. FastAPI's interactive API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs).
 
-Stop either development server with `Control-C`. Stop PostgreSQL without deleting saved data with:
+Stop either development server with `Control-C`. Stop PostgreSQL and ChromaDB without deleting saved data with:
 
 ```bash
 make database-stop
@@ -92,4 +92,4 @@ See [the architecture](docs/ARCHITECTURE.md) for system boundaries and [the road
 
 ## Current milestone
 
-Roadmap Checkpoints 0–2 are complete. Checkpoint 3 now has the persistent Claude chat API and web interface: conversations and complete user/assistant exchanges are stored in PostgreSQL, recent history is sent to Claude, and prompts include current non-archived goals and accomplishments. The next checkpoint is document ingestion and RAG, after this chat checkpoint is reviewed and committed.
+Checkpoint 4 document ingestion is in progress. Validated uploads are stored locally, their metadata and extracted text are saved in PostgreSQL, and overlapping chunks are embedded and indexed in ChromaDB. Retrieval and grounded source references are next.
