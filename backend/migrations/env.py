@@ -12,6 +12,8 @@ from app.models import (  # noqa: F401
     Conversation,
     Document,
     Goal,
+    InterviewSession,
+    InterviewTurn,
     Message,
     ResumeReview,
 )
