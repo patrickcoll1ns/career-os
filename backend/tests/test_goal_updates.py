@@ -21,6 +21,7 @@ def goal_record(**overrides):
         "title": "Finish CareerOS MVP",
         "description": "Build a portfolio project",
         "status": "active",
+        "horizon": "short_term",
         "target_date": date(2026, 10, 1),
         "archived_at": None,
         "created_at": datetime(2026, 8, 8, tzinfo=UTC),

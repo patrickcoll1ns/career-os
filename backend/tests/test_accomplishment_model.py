@@ -7,6 +7,7 @@ def test_accomplishment_table_has_expected_columns() -> None:
         "title",
         "description",
         "achieved_on",
+        "archived_at",
         "created_at",
         "updated_at",
     }

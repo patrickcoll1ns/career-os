@@ -21,6 +21,7 @@ def accomplishment_record(**overrides):
         "title": "Shipped the goal dashboard",
         "description": "Delivered create, edit, archive, and restore flows",
         "achieved_on": date(2026, 8, 8),
+        "archived_at": None,
         "created_at": datetime(2026, 8, 8, tzinfo=UTC),
         "updated_at": datetime(2026, 8, 8, tzinfo=UTC),
     }

@@ -16,6 +16,10 @@ class Goal(Base):
             "status IN ('active', 'paused', 'completed')",
             name="ck_goals_status",
         ),
+        CheckConstraint(
+            "horizon IN ('short_term', 'long_term')",
+            name="ck_goals_horizon",
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -30,6 +34,12 @@ class Goal(Base):
         nullable=False,
         default="active",
         server_default="active",
+    )
+    horizon: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="short_term",
+        server_default="short_term",
     )
     target_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     archived_at: Mapped[datetime | None] = mapped_column(

@@ -42,3 +42,7 @@ class GoalRepository:
         await self.session.commit()
         await self.session.refresh(goal)
         return goal
+
+    async def delete(self, goal: Goal) -> None:
+        await self.session.delete(goal)
+        await self.session.commit()

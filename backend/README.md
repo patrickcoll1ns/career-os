@@ -28,11 +28,20 @@ Goal endpoints:
 - `POST /goals/{goal_id}/archive` soft-deletes a goal.
 - `POST /goals/{goal_id}/restore` restores an archived goal.
 - `GET /goals/archived` lists archived goals.
+- `DELETE /goals/{goal_id}` permanently removes a goal.
+
+Each goal carries a `horizon` of `short_term` or `long_term`, chosen when the goal is created and editable afterwards, so near-term work can be read separately from longer plans.
 
 Accomplishment endpoints:
 
 - `POST /accomplishments` validates and creates a career accomplishment.
 - `GET /accomplishments` lists accomplishments with the newest first.
+- `POST /accomplishments/{accomplishment_id}/archive` soft-deletes an accomplishment.
+- `POST /accomplishments/{accomplishment_id}/restore` restores an archived accomplishment.
+- `GET /accomplishments/archived` lists archived accomplishments.
+- `DELETE /accomplishments/{accomplishment_id}` permanently removes an accomplishment.
+
+Archiving is the recoverable action for both goals and accomplishments; `DELETE` is the permanent one and cannot be undone.
 
 Chat endpoints:
 

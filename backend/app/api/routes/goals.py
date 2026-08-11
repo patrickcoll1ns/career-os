@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_database_session
@@ -88,3 +88,18 @@ async def restore_goal(
         )
 
     return GoalRead.model_validate(goal)
+
+
+@router.delete("/{goal_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_goal(
+    goal_id: uuid.UUID,
+    service: GoalServiceDependency,
+) -> Response:
+    """Permanently remove a goal. Archiving is the recoverable option."""
+    if not await service.delete(goal_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Goal not found",
+        )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

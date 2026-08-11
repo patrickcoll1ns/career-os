@@ -11,9 +11,15 @@ class GoalStatus(str, Enum):
     COMPLETED = "completed"
 
 
+class GoalHorizon(str, Enum):
+    SHORT_TERM = "short_term"
+    LONG_TERM = "long_term"
+
+
 class GoalCreate(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     description: str | None = None
+    horizon: GoalHorizon = GoalHorizon.SHORT_TERM
     target_date: date | None = None
 
     @field_validator("title")
@@ -29,6 +35,7 @@ class GoalUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=200)
     description: str | None = None
     status: GoalStatus | None = None
+    horizon: GoalHorizon | None = None
     target_date: date | None = None
 
     @field_validator("title")
@@ -50,6 +57,7 @@ class GoalRead(BaseModel):
     title: str
     description: str | None
     status: GoalStatus
+    horizon: GoalHorizon
     target_date: date | None
     archived_at: datetime | None
     created_at: datetime

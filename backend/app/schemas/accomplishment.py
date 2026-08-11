@@ -25,5 +25,6 @@ class AccomplishmentRead(BaseModel):
     title: str
     description: str | None
     achieved_on: date | None
+    archived_at: datetime | None
     created_at: datetime
     updated_at: datetime

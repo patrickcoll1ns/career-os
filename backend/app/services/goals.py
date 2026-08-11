@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 
 from app.models.goal import Goal
 from app.repositories.goals import GoalRepository
-from app.schemas.goal import GoalCreate, GoalStatus, GoalUpdate
+from app.schemas.goal import GoalCreate, GoalHorizon, GoalStatus, GoalUpdate
 
 
 class GoalService:
@@ -16,6 +16,7 @@ class GoalService:
         goal = Goal(
             title=goal_data.title,
             description=goal_data.description,
+            horizon=goal_data.horizon.value,
             target_date=goal_data.target_date,
         )
         return await self.repository.add(goal)
@@ -36,8 +37,9 @@ class GoalService:
             return None
 
         updates = goal_data.model_dump(exclude_unset=True)
-        if isinstance(updates.get("status"), GoalStatus):
-            updates["status"] = updates["status"].value
+        for field in ("status", "horizon"):
+            if isinstance(updates.get(field), GoalStatus | GoalHorizon):
+                updates[field] = updates[field].value
 
         for field, value in updates.items():
             setattr(goal, field, value)
@@ -59,3 +61,12 @@ class GoalService:
 
         goal.archived_at = None
         return await self.repository.save(goal)
+
+    async def delete(self, goal_id: uuid.UUID) -> bool:
+        """Permanently remove a goal. Returns False when it is missing."""
+        goal = await self.repository.get(goal_id)
+        if goal is None:
+            return False
+
+        await self.repository.delete(goal)
+        return True
