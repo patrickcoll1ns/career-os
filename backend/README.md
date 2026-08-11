@@ -51,6 +51,15 @@ Resume-review endpoints:
 
 Starting a review sends the selected document's extracted text to Anthropic. The resulting summary, evidence-backed strengths and gaps, and rewrite suggestions are validated against a Pydantic schema and persisted in PostgreSQL.
 
+Mock interview endpoints:
+
+- `POST /interviews` starts a session for a target role, interview type, and difficulty, and returns the session with Claude's first question.
+- `GET /interviews` lists interview sessions with the newest first.
+- `GET /interviews/{session_id}` returns one session with its full question/answer history.
+- `POST /interviews/{session_id}/answers` submits an answer to the current open question, returns Claude's score and feedback on that turn, and either appends the next question or completes the session with a structured summary once the question limit is reached.
+
+Each answer is scored and critiqued independently, then the session as a whole is debriefed with evidence-based strengths, improvements, and learning recommendations once the configured question limit is reached. Session and turn state, including partial progress, is always persisted in PostgreSQL; a Claude failure marks the session `abandoned` rather than leaving inconsistent state.
+
 ## Run tests
 
 From the repository root:
