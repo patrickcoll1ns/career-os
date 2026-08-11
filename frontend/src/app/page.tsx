@@ -16,10 +16,10 @@ const focusAreas = [
     href: "/chat",
   },
   {
-    title: "Resume review",
-    description: "Turn your experience into clear, evidence-based resume feedback.",
-    action: "Review your resume",
-    href: null,
+    title: "Career documents",
+    description: "Upload a resume or career notes to ground your copilot in real evidence.",
+    action: "Manage documents",
+    href: "/documents",
   },
   {
     title: "Interview practice",

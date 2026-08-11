@@ -58,7 +58,7 @@ Terminal 3 starts Next.js:
 make frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) for the dashboard and [http://localhost:3000/chat](http://localhost:3000/chat) for the career copilot. FastAPI's interactive API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs).
+Open [http://localhost:3000](http://localhost:3000) for the dashboard, [http://localhost:3000/documents](http://localhost:3000/documents) for document uploads, and [http://localhost:3000/chat](http://localhost:3000/chat) for the career copilot. FastAPI's interactive API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs).
 
 Stop either development server with `Control-C`. Stop PostgreSQL and ChromaDB without deleting saved data with:
 
