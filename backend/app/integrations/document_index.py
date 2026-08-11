@@ -12,6 +12,7 @@ class RetrievedDocumentChunk:
     filename: str
     chunk_index: int
     text: str
+    distance: float
 
 
 class DocumentVectorIndex:
@@ -22,9 +23,11 @@ class DocumentVectorIndex:
         host: str,
         port: int,
         collection_name: str = "career_documents",
+        max_distance: float = 1.6,
     ) -> None:
         self.client = chromadb.HttpClient(host=host, port=port)
         self.collection_name = collection_name
+        self.max_distance = max_distance
 
     def index(
         self,
@@ -54,9 +57,14 @@ class DocumentVectorIndex:
 
     def search(self, query: str, limit: int = 5) -> list[RetrievedDocumentChunk]:
         collection = self.client.get_or_create_collection(self.collection_name)
-        result = collection.query(query_texts=[query], n_results=limit)
+        result = collection.query(
+            query_texts=[query],
+            n_results=limit,
+            include=["documents", "metadatas", "distances"],
+        )
         documents = (result.get("documents") or [[]])[0]
         metadatas = (result.get("metadatas") or [[]])[0]
+        distances = (result.get("distances") or [[]])[0]
 
         return [
             RetrievedDocumentChunk(
@@ -64,6 +72,13 @@ class DocumentVectorIndex:
                 filename=str(metadata["filename"]),
                 chunk_index=int(metadata["chunk_index"]),
                 text=document,
+                distance=float(distance),
             )
-            for document, metadata in zip(documents, metadatas, strict=True)
+            for document, metadata, distance in zip(
+                documents,
+                metadatas,
+                distances,
+                strict=True,
+            )
+            if distance <= self.max_distance
         ]

@@ -35,6 +35,7 @@ def get_chat_service(session: DatabaseSession) -> ChatService:
             settings.chroma_host,
             settings.chroma_port,
             settings.chroma_collection,
+            settings.chroma_max_distance,
         ),
     )
 

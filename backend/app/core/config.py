@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     chroma_host: str = "localhost"
     chroma_port: int = 8001
     chroma_collection: str = "career_documents"
+    chroma_max_distance: float = 1.6
     document_upload_directory: Path = REPOSITORY_ROOT / "data" / "uploads"
     max_document_size_bytes: int = 5 * 1024 * 1024
 

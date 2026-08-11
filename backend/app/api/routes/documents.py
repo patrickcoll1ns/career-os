@@ -34,6 +34,7 @@ def get_document_service(session: DatabaseSession) -> DocumentService:
             settings.chroma_host,
             settings.chroma_port,
             settings.chroma_collection,
+            settings.chroma_max_distance,
         ),
     )
 
