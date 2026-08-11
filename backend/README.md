@@ -43,6 +43,14 @@ Chat endpoints:
 
 Live replies require `ANTHROPIC_API_KEY` in the ignored root `.env` file. Without a valid key, sending a message returns `502 Bad Gateway` and no partial user-only exchange is saved. `ANTHROPIC_MODEL` defaults to `claude-sonnet-5` and can be overridden locally.
 
+Resume-review endpoints:
+
+- `POST /resume-reviews` reviews one successfully indexed document for an optional target role.
+- `GET /resume-reviews` lists saved review history.
+- `GET /resume-reviews/{review_id}` returns one structured review.
+
+Starting a review sends the selected document's extracted text to Anthropic. The resulting summary, evidence-backed strengths and gaps, and rewrite suggestions are validated against a Pydantic schema and persisted in PostgreSQL.
+
 ## Run tests
 
 From the repository root:

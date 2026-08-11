@@ -9,6 +9,7 @@ from app.api.routes.chat import router as chat_router
 from app.api.routes.documents import router as documents_router
 from app.api.routes.goals import router as goals_router
 from app.api.routes.health import router as health_router
+from app.api.routes.resume_reviews import router as resume_reviews_router
 from app.core.config import settings
 from app.db.session import engine
 
@@ -39,6 +40,7 @@ def create_app() -> FastAPI:
     application.include_router(accomplishments_router)
     application.include_router(chat_router)
     application.include_router(documents_router)
+    application.include_router(resume_reviews_router)
 
     return application
 

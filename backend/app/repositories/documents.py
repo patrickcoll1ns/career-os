@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +17,9 @@ class DocumentRepository:
 
     async def update(self, document: Document) -> Document:
         return await self._save(document)
+
+    async def get(self, document_id: uuid.UUID) -> Document | None:
+        return await self.session.get(Document, document_id)
 
     async def _save(self, document: Document) -> Document:
         self.session.add(document)

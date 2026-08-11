@@ -92,4 +92,4 @@ See [the architecture](docs/ARCHITECTURE.md) for system boundaries and [the road
 
 ## Current milestone
 
-Checkpoint 4 document ingestion and grounded chat are complete. Validated uploads are stored locally, their metadata and extracted text are saved in PostgreSQL, and overlapping chunks are embedded and indexed in ChromaDB. Chat searches all indexed documents, gives Claude only chunks that clear a configurable semantic-relevance threshold, and persists and displays the sources used for each grounded response.
+Checkpoint 4 document ingestion and grounded chat are complete. Checkpoint 5 resume review is in progress: the backend can review a selected indexed document for an optional target role, validate Claude's structured strengths, gaps, and rewrite suggestions, and persist successful or failed review history. The resume-review interface is next.
