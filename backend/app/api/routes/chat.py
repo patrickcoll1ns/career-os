@@ -4,8 +4,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.db.session import get_database_session
 from app.integrations.anthropic_client import AnthropicClient, AnthropicReplyError
+from app.integrations.document_index import DocumentVectorIndex
 from app.models.conversation import Conversation
 from app.models.message import Message
 from app.repositories.accomplishments import AccomplishmentRepository
@@ -29,6 +31,11 @@ def get_chat_service(session: DatabaseSession) -> ChatService:
         GoalRepository(session),
         AccomplishmentRepository(session),
         AnthropicClient(),
+        DocumentVectorIndex(
+            settings.chroma_host,
+            settings.chroma_port,
+            settings.chroma_collection,
+        ),
     )
 
 

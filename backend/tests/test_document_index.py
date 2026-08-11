@@ -55,3 +55,42 @@ def test_index_deletes_stale_records_when_document_has_no_chunks() -> None:
 
     collection.delete.assert_called_once()
     collection.add.assert_not_called()
+
+
+def test_search_returns_typed_chunks_with_source_metadata() -> None:
+    collection = Mock()
+    collection.query.return_value = {
+        "documents": [["Built production APIs with FastAPI"]],
+        "metadatas": [
+            [
+                {
+                    "document_id": "document-1",
+                    "filename": "resume.pdf",
+                    "chunk_index": 3,
+                }
+            ]
+        ],
+    }
+    client = Mock()
+    client.get_or_create_collection.return_value = collection
+    index = build_index(client)
+
+    chunks = index.search("backend experience", limit=4)
+
+    collection.query.assert_called_once_with(
+        query_texts=["backend experience"], n_results=4
+    )
+    assert len(chunks) == 1
+    assert chunks[0].document_id == "document-1"
+    assert chunks[0].filename == "resume.pdf"
+    assert chunks[0].chunk_index == 3
+    assert chunks[0].text == "Built production APIs with FastAPI"
+
+
+def test_search_returns_empty_list_for_an_empty_collection() -> None:
+    collection = Mock()
+    collection.query.return_value = {"documents": [[]], "metadatas": [[]]}
+    client = Mock()
+    client.get_or_create_collection.return_value = collection
+
+    assert build_index(client).search("anything") == []

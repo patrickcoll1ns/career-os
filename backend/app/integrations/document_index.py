@@ -1,8 +1,17 @@
 import uuid
+from dataclasses import dataclass
 
 import chromadb
 
 from app.integrations.document_chunker import DocumentChunk
+
+
+@dataclass(frozen=True)
+class RetrievedDocumentChunk:
+    document_id: str
+    filename: str
+    chunk_index: int
+    text: str
 
 
 class DocumentVectorIndex:
@@ -42,3 +51,19 @@ class DocumentVectorIndex:
                 for chunk in chunks
             ],
         )
+
+    def search(self, query: str, limit: int = 5) -> list[RetrievedDocumentChunk]:
+        collection = self.client.get_or_create_collection(self.collection_name)
+        result = collection.query(query_texts=[query], n_results=limit)
+        documents = (result.get("documents") or [[]])[0]
+        metadatas = (result.get("metadatas") or [[]])[0]
+
+        return [
+            RetrievedDocumentChunk(
+                document_id=str(metadata["document_id"]),
+                filename=str(metadata["filename"]),
+                chunk_index=int(metadata["chunk_index"]),
+                text=document,
+            )
+            for document, metadata in zip(documents, metadatas, strict=True)
+        ]
