@@ -1,8 +1,8 @@
 # CareerOS
 
-CareerOS is an AI-powered career copilot for planning and documenting career growth. The portfolio MVP currently includes persistent goals and accomplishments plus Claude-powered conversations grounded in that structured career context.
+CareerOS is an AI-powered career copilot for planning and documenting career growth. The portfolio MVP currently includes persistent goals and accomplishments, Claude-powered conversations grounded in that structured career context, resume review, and mock interviews.
 
-Planned capabilities include resume feedback, document-grounded retrieval, mock interviews, and recommendations for what to learn next.
+Planned capabilities include authentication, per-user isolation, and deployment.
 
 ## Technology
 
@@ -58,7 +58,7 @@ Terminal 3 starts Next.js:
 make frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) for the dashboard, [http://localhost:3000/documents](http://localhost:3000/documents) for document uploads, and [http://localhost:3000/chat](http://localhost:3000/chat) for the career copilot. FastAPI's interactive API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs).
+Open [http://localhost:3000](http://localhost:3000) for the dashboard, [http://localhost:3000/documents](http://localhost:3000/documents) for document uploads, [http://localhost:3000/chat](http://localhost:3000/chat) for the career copilot, [http://localhost:3000/resume-reviews](http://localhost:3000/resume-reviews) for resume feedback, and [http://localhost:3000/interviews](http://localhost:3000/interviews) for mock interviews. FastAPI's interactive API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs).
 
 Stop either development server with `Control-C`. Stop PostgreSQL and ChromaDB without deleting saved data with:
 
@@ -93,3 +93,5 @@ See [the architecture](docs/ARCHITECTURE.md) for system boundaries and [the road
 ## Current milestone
 
 Checkpoint 4 document ingestion and grounded chat are complete. Checkpoint 5 resume review is complete: users can select an indexed document, optionally target a role, generate a validated structured Claude review, browse saved history, and inspect evidence-backed strengths, gaps, and rewrite suggestions.
+
+Checkpoint 6 mock interviews are complete: users configure a target role, interview type, difficulty, and question count, then answer Claude's questions one at a time. Each answer is scored out of five with specific feedback, and finishing the session produces a structured debrief of strengths, improvements, and what to learn next.

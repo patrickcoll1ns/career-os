@@ -30,8 +30,8 @@ const focusAreas = [
   {
     title: "Interview practice",
     description: "Practice role-specific questions and learn from structured feedback.",
-    action: "Plan an interview",
-    href: null,
+    action: "Start an interview",
+    href: "/interviews",
   },
 ];
 
