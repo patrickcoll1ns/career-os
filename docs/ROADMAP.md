@@ -54,6 +54,9 @@ Done when an answer can cite information from an uploaded resume.
 - Conduct question-by-question interview sessions.
 - Produce structured feedback and learning recommendations.
 
+Done when a session can be configured, answered question by question with
+per-answer scoring, and completed with a structured debrief.
+
 ## Checkpoint 7 — Portfolio release
 
 - Add authentication and user isolation.

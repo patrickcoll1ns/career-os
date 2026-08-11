@@ -94,5 +94,6 @@ The initial portfolio MVP prioritizes a polished demonstration over a wide featu
 2. Persistent Claude-powered career chat
 3. Resume/document upload and grounded RAG answers
 4. One focused resume-feedback workflow
+5. Question-by-question mock interviews with scored feedback
 
-Mock interviews and more advanced planning features will follow as separate increments.
+More advanced planning features will follow as separate increments.
