@@ -17,6 +17,7 @@ def test_message_table_has_expected_columns() -> None:
         "conversation_id",
         "role",
         "content",
+        "sources",
         "created_at",
     }
 

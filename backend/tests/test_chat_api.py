@@ -29,6 +29,7 @@ def message_record(**overrides):
         "id": uuid.uuid4(),
         "role": "user",
         "content": "Hello",
+        "sources": [],
         "created_at": datetime(2026, 8, 8, tzinfo=UTC),
     }
     values.update(overrides)
@@ -101,7 +102,17 @@ def test_send_message() -> None:
         conversation_record(id=conversation_id),
         [
             message_record(role="user"),
-            message_record(role="assistant", content="Hi there"),
+            message_record(
+                role="assistant",
+                content="Hi there",
+                sources=[
+                    {
+                        "document_id": str(uuid.uuid4()),
+                        "filename": "resume.pdf",
+                        "chunk_index": 2,
+                    }
+                ],
+            ),
         ],
     )
     app.dependency_overrides[get_chat_service] = lambda: service
@@ -116,6 +127,7 @@ def test_send_message() -> None:
 
     assert response.status_code == 200
     assert len(response.json()["messages"]) == 2
+    assert response.json()["messages"][1]["sources"][0]["filename"] == "resume.pdf"
     service.send_message.assert_awaited_once_with(
         conversation_id, "How should I prep for interviews?"
     )

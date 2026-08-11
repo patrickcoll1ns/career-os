@@ -10,12 +10,19 @@ class MessageRole(str, Enum):
     ASSISTANT = "assistant"
 
 
+class MessageSource(BaseModel):
+    document_id: uuid.UUID
+    filename: str
+    chunk_index: int
+
+
 class MessageRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
     role: MessageRole
     content: str
+    sources: list[MessageSource] = Field(default_factory=list)
     created_at: datetime
 
 

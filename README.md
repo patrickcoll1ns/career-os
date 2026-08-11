@@ -92,4 +92,4 @@ See [the architecture](docs/ARCHITECTURE.md) for system boundaries and [the road
 
 ## Current milestone
 
-Checkpoint 4 document ingestion is in progress. Validated uploads are stored locally, their metadata and extracted text are saved in PostgreSQL, and overlapping chunks are embedded and indexed in ChromaDB. Chat searches all indexed documents but gives Claude only chunks that clear a configurable semantic-relevance threshold. Returning source references to the interface is next.
+Checkpoint 4 document ingestion and grounded chat are complete. Validated uploads are stored locally, their metadata and extracted text are saved in PostgreSQL, and overlapping chunks are embedded and indexed in ChromaDB. Chat searches all indexed documents, gives Claude only chunks that clear a configurable semantic-relevance threshold, and persists and displays the sources used for each grounded response.

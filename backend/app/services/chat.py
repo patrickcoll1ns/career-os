@@ -109,6 +109,14 @@ class ChatService:
             conversation_id=conversation_id,
             role="assistant",
             content=reply_text,
+            sources=[
+                {
+                    "document_id": chunk.document_id,
+                    "filename": chunk.filename,
+                    "chunk_index": chunk.chunk_index,
+                }
+                for chunk in retrieved_chunks
+            ],
             created_at=assistant_message_time,
         )
         await self.conversation_repository.add_exchange(

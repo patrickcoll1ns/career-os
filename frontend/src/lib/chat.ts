@@ -2,10 +2,17 @@ import "server-only";
 
 export type MessageRole = "user" | "assistant";
 
+export type MessageSource = {
+  document_id: string;
+  filename: string;
+  chunk_index: number;
+};
+
 export type Message = {
   id: string;
   role: MessageRole;
   content: string;
+  sources: MessageSource[];
   created_at: string;
 };
 

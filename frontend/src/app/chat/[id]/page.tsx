@@ -14,7 +14,26 @@ function MessageBubble({ message }: { message: Message }) {
   return (
     <li className={`max-w-[85%] rounded-2xl px-4 py-3 ${roleStyles[message.role]}`}>
       {message.role === "assistant" ? (
-        <MarkdownMessage content={message.content} />
+        <>
+          <MarkdownMessage content={message.content} />
+          {message.sources.length > 0 ? (
+            <div className="mt-4 border-t border-[#e2e8e3] pt-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6d7b73]">
+                Sources
+              </p>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {message.sources.map((source) => (
+                  <li
+                    key={`${source.document_id}:${source.chunk_index}`}
+                    className="rounded-full bg-[#edf3ee] px-2.5 py-1 text-xs font-medium text-[#397454]"
+                  >
+                    {source.filename} · section {source.chunk_index + 1}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </>
       ) : (
         <p className="whitespace-pre-wrap text-sm leading-6">{message.content}</p>
       )}
@@ -76,7 +95,8 @@ export default async function ChatConversationPage({
               {conversation.messages.length === 0 ? (
                 <p className="text-sm leading-6 text-[#69766e]">
                   Send a message to start the conversation. Your reply will be
-                  grounded in your current goals and accomplishments.
+                  grounded in your current goals, accomplishments, and relevant
+                  uploaded documents.
                 </p>
               ) : (
                 <ul className="flex flex-col gap-3">
