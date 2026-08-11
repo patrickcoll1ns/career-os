@@ -7,6 +7,11 @@ from app.schemas.resume_review import ResumeReviewResult
 
 MAX_RESUME_CHARACTERS = 60_000
 
+# The configured model runs adaptive thinking by default, and max_tokens caps
+# thinking and response text together. A budget sized only for the JSON leaves
+# too little room and truncates the structured output mid-object.
+MAX_RESPONSE_TOKENS = 16_000
+
 SYSTEM_PROMPT = (
     "You are a rigorous technical recruiter reviewing a resume. Return concise, "
     "specific, evidence-based feedback. Never invent experience, metrics, skills, "
@@ -44,7 +49,7 @@ class AnthropicResumeReviewer:
             ) as client:
                 response = await client.messages.parse(
                     model=settings.anthropic_model,
-                    max_tokens=4096,
+                    max_tokens=MAX_RESPONSE_TOKENS,
                     system=SYSTEM_PROMPT,
                     messages=[{"role": "user", "content": prompt}],
                     output_format=ResumeReviewResult,

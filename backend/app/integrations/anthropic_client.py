@@ -2,6 +2,11 @@ import anthropic
 
 from app.core.config import settings
 
+# max_tokens caps thinking and reply text together. This request streams, so a
+# larger budget costs nothing extra and keeps long grounded replies from being
+# cut off mid-sentence.
+MAX_RESPONSE_TOKENS = 64_000
+
 
 class AnthropicReplyError(RuntimeError):
     """Raised when the Anthropic API could not produce a reply."""
@@ -21,7 +26,7 @@ class AnthropicClient:
             ) as client:
                 async with client.messages.stream(
                     model=settings.anthropic_model,
-                    max_tokens=4096,
+                    max_tokens=MAX_RESPONSE_TOKENS,
                     system=system_prompt,
                     thinking={"type": "adaptive"},
                     messages=messages,

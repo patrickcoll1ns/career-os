@@ -7,6 +7,11 @@ from app.schemas.interview import QuestionResult, SessionSummary, TurnFeedback
 
 MAX_ANSWER_CHARACTERS = 8_000
 
+# The configured model runs adaptive thinking by default, and max_tokens caps
+# thinking and response text together. The end-of-session debrief grows with the
+# question limit, so the budget has to cover thinking plus the full summary.
+MAX_RESPONSE_TOKENS = 16_000
+
 QUESTION_SYSTEM_PROMPT = (
     "You are an experienced technical interviewer running a mock interview. "
     "Ask exactly one clear, focused question appropriate for the target role, "
@@ -117,7 +122,7 @@ class AnthropicInterviewer:
             ) as client:
                 response = await client.messages.parse(
                     model=settings.anthropic_model,
-                    max_tokens=2048,
+                    max_tokens=MAX_RESPONSE_TOKENS,
                     system=system_prompt,
                     messages=[{"role": "user", "content": prompt}],
                     output_format=output_format,
