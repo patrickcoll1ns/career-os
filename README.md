@@ -92,4 +92,4 @@ See [the architecture](docs/ARCHITECTURE.md) for system boundaries and [the road
 
 ## Current milestone
 
-Checkpoint 4 document ingestion and grounded chat are complete. Checkpoint 5 resume review is in progress: the backend can review a selected indexed document for an optional target role, validate Claude's structured strengths, gaps, and rewrite suggestions, and persist successful or failed review history. The resume-review interface is next.
+Checkpoint 4 document ingestion and grounded chat are complete. Checkpoint 5 resume review is complete: users can select an indexed document, optionally target a role, generate a validated structured Claude review, browse saved history, and inspect evidence-backed strengths, gaps, and rewrite suggestions.

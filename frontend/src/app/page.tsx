@@ -22,6 +22,12 @@ const focusAreas = [
     href: "/documents",
   },
   {
+    title: "Resume review",
+    description: "Turn your experience into evidence-based strengths, gaps, and rewrites.",
+    action: "Review your resume",
+    href: "/resume-reviews",
+  },
+  {
     title: "Interview practice",
     description: "Practice role-specific questions and learn from structured feedback.",
     action: "Plan an interview",
@@ -93,7 +99,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {focusAreas.map((area, index) => {
               const cardClassName =
                 "group rounded-3xl border border-[#dbe2dc] bg-[#fbfcf9] p-6 transition hover:-translate-y-1 hover:border-[#b8cabd] hover:shadow-[0_14px_40px_rgba(28,61,43,0.08)]";
