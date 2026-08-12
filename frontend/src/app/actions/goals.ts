@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import {
   archiveGoal,
   createGoal,
+  deleteGoal,
   restoreGoal,
+  type GoalHorizon,
   type GoalStatus,
   updateGoalDetails,
   updateGoalStatus,
@@ -15,6 +17,15 @@ export type GoalFormState = {
   status: "idle" | "success" | "error";
   message: string;
 };
+
+const goalHorizons: GoalHorizon[] = ["short_term", "long_term"];
+
+function readHorizon(formData: FormData): GoalHorizon {
+  const horizon = String(formData.get("horizon") ?? "");
+  return goalHorizons.includes(horizon as GoalHorizon)
+    ? (horizon as GoalHorizon)
+    : "short_term";
+}
 
 export async function createGoalAction(
   _previousState: GoalFormState,
@@ -31,6 +42,7 @@ export async function createGoalAction(
   try {
     await createGoal({
       title,
+      horizon: readHorizon(formData),
       ...(description ? { description } : {}),
       ...(targetDate ? { target_date: targetDate } : {}),
     });
@@ -86,6 +98,7 @@ export async function updateGoalDetailsAction(
     await updateGoalDetails(goalId, {
       title,
       description: description || null,
+      horizon: readHorizon(formData),
       target_date: targetDate || null,
     });
     revalidatePath("/");
@@ -138,6 +151,28 @@ export async function restoreGoalAction(
     return {
       status: "error",
       message: "Could not restore the goal. Make sure FastAPI is running.",
+    };
+  }
+}
+
+export async function deleteGoalAction(
+  _previousState: GoalFormState,
+  formData: FormData,
+): Promise<GoalFormState> {
+  const goalId = String(formData.get("goalId") ?? "");
+
+  if (!goalId) {
+    return { status: "error", message: "That goal could not be deleted." };
+  }
+
+  try {
+    await deleteGoal(goalId);
+    revalidatePath("/");
+    return { status: "success", message: "Goal deleted." };
+  } catch {
+    return {
+      status: "error",
+      message: "Could not delete the goal. Make sure FastAPI is running.",
     };
   }
 }

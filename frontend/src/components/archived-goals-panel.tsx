@@ -1,3 +1,5 @@
+import { deleteGoalAction } from "@/app/actions/goals";
+import { ConfirmDeleteControl } from "@/components/confirm-delete-control";
 import { GoalRestoreControl } from "@/components/goal-restore-control";
 import { formatDate } from "@/lib/format";
 import { getArchivedGoals, type Goal } from "@/lib/goals";
@@ -20,6 +22,12 @@ function ArchivedGoalCard({ goal }: { goal: Goal }) {
         {formatDate(goal.target_date, "No target date")}
       </p>
       <GoalRestoreControl goalId={goal.id} />
+      <ConfirmDeleteControl
+        action={deleteGoalAction}
+        idField="goalId"
+        id={goal.id}
+        label="goal"
+      />
     </li>
   );
 }

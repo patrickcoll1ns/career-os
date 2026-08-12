@@ -1,12 +1,14 @@
 import "server-only";
 
 export type GoalStatus = "active" | "paused" | "completed";
+export type GoalHorizon = "short_term" | "long_term";
 
 export type Goal = {
   id: string;
   title: string;
   description: string | null;
   status: GoalStatus;
+  horizon: GoalHorizon;
   target_date: string | null;
   archived_at: string | null;
   created_at: string;
@@ -16,6 +18,7 @@ export type Goal = {
 export type CreateGoalInput = {
   title: string;
   description?: string;
+  horizon?: GoalHorizon;
   target_date?: string;
 };
 
@@ -68,6 +71,7 @@ export async function createGoal(input: CreateGoalInput): Promise<Goal> {
 export type UpdateGoalDetailsInput = {
   title: string;
   description: string | null;
+  horizon: GoalHorizon;
   target_date: string | null;
 };
 
@@ -127,4 +131,14 @@ export async function restoreGoal(goalId: string): Promise<Goal> {
   }
 
   return response.json();
+}
+
+export async function deleteGoal(goalId: string): Promise<void> {
+  const response = await fetch(`${apiUrl}/goals/${goalId}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("FastAPI could not delete the goal.");
+  }
 }

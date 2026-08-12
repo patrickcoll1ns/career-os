@@ -1,15 +1,30 @@
+import { deleteGoalAction } from "@/app/actions/goals";
+import { ConfirmDeleteControl } from "@/components/confirm-delete-control";
 import { GoalArchiveControl } from "@/components/goal-archive-control";
 import { GoalEditControls } from "@/components/goal-edit-controls";
 import { GoalForm } from "@/components/goal-form";
 import { GoalStatusControls } from "@/components/goal-status-controls";
 import { formatDate } from "@/lib/format";
-import { getGoals, type Goal, type GoalStatus } from "@/lib/goals";
+import { getGoals, type Goal, type GoalHorizon, type GoalStatus } from "@/lib/goals";
 
 const statusStyles: Record<GoalStatus, string> = {
   active: "bg-[#e4efe7] text-[#397454]",
   paused: "bg-[#f4ecd9] text-[#80672d]",
   completed: "bg-[#e5e9f4] text-[#4b5f88]",
 };
+
+const horizonSections: { horizon: GoalHorizon; title: string; blurb: string }[] = [
+  {
+    horizon: "short_term",
+    title: "Short term",
+    blurb: "What you're working on now.",
+  },
+  {
+    horizon: "long_term",
+    title: "Long term",
+    blurb: "Where this is all heading.",
+  },
+];
 
 function GoalCard({ goal }: { goal: Goal }) {
   return (
@@ -33,6 +48,12 @@ function GoalCard({ goal }: { goal: Goal }) {
       <GoalEditControls goal={goal} />
       <GoalStatusControls goalId={goal.id} status={goal.status} />
       <GoalArchiveControl goalId={goal.id} />
+      <ConfirmDeleteControl
+        action={deleteGoalAction}
+        idField="goalId"
+        id={goal.id}
+        label="goal"
+      />
     </li>
   );
 }
@@ -78,11 +99,37 @@ export async function GoalsPanel() {
             <p className="mt-2 text-sm text-[#748078]">Your first goal will appear here after you add it.</p>
           </div>
         ) : (
-          <ul className="mt-6 space-y-3">
-            {goals.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} />
-            ))}
-          </ul>
+          <div className="mt-6 space-y-8">
+            {horizonSections.map(({ horizon, title, blurb }) => {
+              const sectionGoals = goals.filter((goal) => goal.horizon === horizon);
+
+              return (
+                <div key={horizon}>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-[#526158]">
+                      {title}
+                    </h3>
+                    <span className="text-xs text-[#7a877f]">
+                      {sectionGoals.length}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-[#7a877f]">{blurb}</p>
+
+                  {sectionGoals.length === 0 ? (
+                    <p className="mt-3 rounded-2xl border border-dashed border-[#c9d5cc] bg-white/60 p-4 text-sm text-[#748078]">
+                      Nothing here yet.
+                    </p>
+                  ) : (
+                    <ul className="mt-3 space-y-3">
+                      {sectionGoals.map((goal) => (
+                        <GoalCard key={goal.id} goal={goal} />
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </section>

@@ -81,6 +81,24 @@ export function GoalEditControls({ goal }: { goal: Goal }) {
       <div>
         <label
           className="text-xs font-medium text-[#34473c]"
+          htmlFor={`edit-horizon-${goal.id}`}
+        >
+          Time horizon
+        </label>
+        <select
+          id={`edit-horizon-${goal.id}`}
+          name="horizon"
+          defaultValue={goal.horizon}
+          className="mt-1 w-full rounded-lg border border-[#ced8d0] bg-white px-3 py-2 text-sm outline-none transition focus:border-[#4f8062] focus:ring-2 focus:ring-[#dceadf]"
+        >
+          <option value="short_term">Short term</option>
+          <option value="long_term">Long term</option>
+        </select>
+      </div>
+
+      <div>
+        <label
+          className="text-xs font-medium text-[#34473c]"
           htmlFor={`edit-target-date-${goal.id}`}
         >
           Target date

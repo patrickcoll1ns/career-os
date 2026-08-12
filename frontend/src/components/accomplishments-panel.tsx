@@ -1,6 +1,12 @@
+import { deleteAccomplishmentAction } from "@/app/actions/accomplishments";
+import { AccomplishmentArchiveControl } from "@/components/accomplishment-archive-control";
 import { AccomplishmentForm } from "@/components/accomplishment-form";
+import { ConfirmDeleteControl } from "@/components/confirm-delete-control";
 import { getAccomplishments, type Accomplishment } from "@/lib/accomplishments";
 import { formatDate } from "@/lib/format";
+
+/** How many of the newest entries stay expanded on the dashboard. */
+const RECENT_LIMIT = 5;
 
 function AccomplishmentCard({ accomplishment }: { accomplishment: Accomplishment }) {
   return (
@@ -12,12 +18,24 @@ function AccomplishmentCard({ accomplishment }: { accomplishment: Accomplishment
       <p className="mt-4 text-xs font-medium text-[#7a877f]">
         {formatDate(accomplishment.achieved_on, "No date recorded")}
       </p>
+      <AccomplishmentArchiveControl
+        accomplishmentId={accomplishment.id}
+        mode="archive"
+      />
+      <ConfirmDeleteControl
+        action={deleteAccomplishmentAction}
+        idField="accomplishmentId"
+        id={accomplishment.id}
+        label="accomplishment"
+      />
     </li>
   );
 }
 
 export async function AccomplishmentsPanel() {
   const accomplishments = await getAccomplishments();
+  const recent = accomplishments?.slice(0, RECENT_LIMIT) ?? [];
+  const earlier = accomplishments?.slice(RECENT_LIMIT) ?? [];
 
   return (
     <section
@@ -63,11 +81,30 @@ export async function AccomplishmentsPanel() {
             <p className="mt-2 text-sm text-[#748078]">Your first entry will appear here after you add it.</p>
           </div>
         ) : (
-          <ul className="mt-6 space-y-3">
-            {accomplishments.map((accomplishment) => (
-              <AccomplishmentCard key={accomplishment.id} accomplishment={accomplishment} />
-            ))}
-          </ul>
+          <>
+            <ul className="mt-6 space-y-3">
+              {recent.map((accomplishment) => (
+                <AccomplishmentCard key={accomplishment.id} accomplishment={accomplishment} />
+              ))}
+            </ul>
+
+            {earlier.length > 0 ? (
+              <details className="group mt-4 rounded-2xl border border-[#dce4dd] bg-white/70 p-4">
+                <summary className="cursor-pointer list-none text-sm font-semibold text-[#405248] transition hover:text-[#173d2c]">
+                  <span className="group-open:hidden">
+                    Show {earlier.length} earlier{" "}
+                    {earlier.length === 1 ? "entry" : "entries"}
+                  </span>
+                  <span className="hidden group-open:inline">Hide earlier entries</span>
+                </summary>
+                <ul className="mt-4 space-y-3">
+                  {earlier.map((accomplishment) => (
+                    <AccomplishmentCard key={accomplishment.id} accomplishment={accomplishment} />
+                  ))}
+                </ul>
+              </details>
+            ) : null}
+          </>
         )}
       </div>
     </section>

@@ -51,6 +51,21 @@ export function GoalForm() {
       </div>
 
       <div>
+        <label className="text-sm font-medium text-[#34473c]" htmlFor="goal-horizon">
+          Time horizon
+        </label>
+        <select
+          id="goal-horizon"
+          name="horizon"
+          defaultValue="short_term"
+          className="mt-2 w-full rounded-xl border border-[#ced8d0] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#4f8062] focus:ring-3 focus:ring-[#dceadf]"
+        >
+          <option value="short_term">Short term</option>
+          <option value="long_term">Long term</option>
+        </select>
+      </div>
+
+      <div>
         <label className="text-sm font-medium text-[#34473c]" htmlFor="goal-target-date">
           Target date <span className="font-normal text-[#7a877f]">(optional)</span>
         </label>
