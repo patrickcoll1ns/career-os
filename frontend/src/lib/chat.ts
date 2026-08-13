@@ -1,5 +1,7 @@
 import "server-only";
 
+import { backendFetch } from "@/lib/backend-api";
+
 export type MessageRole = "user" | "assistant";
 
 export type MessageSource = {
@@ -27,11 +29,9 @@ export type ConversationWithMessages = Conversation & {
   messages: Message[];
 };
 
-const apiUrl = process.env.API_URL ?? "http://localhost:8000";
-
 export async function getConversations(): Promise<Conversation[] | null> {
   try {
-    const response = await fetch(`${apiUrl}/chat/conversations`, {
+    const response = await backendFetch("/chat/conversations", {
       cache: "no-store",
     });
 
@@ -49,8 +49,8 @@ export async function getConversation(
   conversationId: string,
 ): Promise<ConversationWithMessages | null> {
   try {
-    const response = await fetch(
-      `${apiUrl}/chat/conversations/${conversationId}`,
+    const response = await backendFetch(
+      `/chat/conversations/${conversationId}`,
       { cache: "no-store" },
     );
 
@@ -65,7 +65,7 @@ export async function getConversation(
 }
 
 export async function createConversation(): Promise<Conversation> {
-  const response = await fetch(`${apiUrl}/chat/conversations`, {
+  const response = await backendFetch("/chat/conversations", {
     method: "POST",
   });
 
@@ -80,8 +80,8 @@ export async function sendMessage(
   conversationId: string,
   content: string,
 ): Promise<ConversationWithMessages> {
-  const response = await fetch(
-    `${apiUrl}/chat/conversations/${conversationId}/messages`,
+  const response = await backendFetch(
+    `/chat/conversations/${conversationId}/messages`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { backendFetch } from "@/lib/backend-api";
+
 export type Accomplishment = {
   id: string;
   title: string;
@@ -16,11 +18,9 @@ export type CreateAccomplishmentInput = {
   achieved_on?: string;
 };
 
-const apiUrl = process.env.API_URL ?? "http://localhost:8000";
-
 export async function getAccomplishments(): Promise<Accomplishment[] | null> {
   try {
-    const response = await fetch(`${apiUrl}/accomplishments`, {
+    const response = await backendFetch("/accomplishments", {
       cache: "no-store",
     });
 
@@ -38,7 +38,7 @@ export async function getArchivedAccomplishments(): Promise<
   Accomplishment[] | null
 > {
   try {
-    const response = await fetch(`${apiUrl}/accomplishments/archived`, {
+    const response = await backendFetch("/accomplishments/archived", {
       cache: "no-store",
     });
 
@@ -55,7 +55,7 @@ export async function getArchivedAccomplishments(): Promise<
 export async function createAccomplishment(
   input: CreateAccomplishmentInput,
 ): Promise<Accomplishment> {
-  const response = await fetch(`${apiUrl}/accomplishments`, {
+  const response = await backendFetch("/accomplishments", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
@@ -71,8 +71,8 @@ export async function createAccomplishment(
 export async function archiveAccomplishment(
   accomplishmentId: string,
 ): Promise<Accomplishment> {
-  const response = await fetch(
-    `${apiUrl}/accomplishments/${accomplishmentId}/archive`,
+  const response = await backendFetch(
+    `/accomplishments/${accomplishmentId}/archive`,
     { method: "POST" },
   );
 
@@ -86,8 +86,8 @@ export async function archiveAccomplishment(
 export async function restoreAccomplishment(
   accomplishmentId: string,
 ): Promise<Accomplishment> {
-  const response = await fetch(
-    `${apiUrl}/accomplishments/${accomplishmentId}/restore`,
+  const response = await backendFetch(
+    `/accomplishments/${accomplishmentId}/restore`,
     { method: "POST" },
   );
 
@@ -101,7 +101,7 @@ export async function restoreAccomplishment(
 export async function deleteAccomplishment(
   accomplishmentId: string,
 ): Promise<void> {
-  const response = await fetch(`${apiUrl}/accomplishments/${accomplishmentId}`, {
+  const response = await backendFetch(`/accomplishments/${accomplishmentId}`, {
     method: "DELETE",
   });
 

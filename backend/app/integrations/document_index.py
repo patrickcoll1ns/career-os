@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 import chromadb
 
+from app.core.auth import get_current_owner_id
 from app.integrations.document_chunker import DocumentChunk
 
 
@@ -28,6 +29,7 @@ class DocumentVectorIndex:
         self.host = host
         self.port = port
         self._client: chromadb.ClientAPI | None = None
+        self.owner_id = get_current_owner_id()
         self.collection_name = collection_name
         self.max_distance = max_distance
 
@@ -55,7 +57,14 @@ class DocumentVectorIndex:
     ) -> None:
         collection = self.client.get_or_create_collection(self.collection_name)
         document_id_text = str(document_id)
-        collection.delete(where={"document_id": document_id_text})
+        collection.delete(
+            where={
+                "$and": [
+                    {"document_id": document_id_text},
+                    {"owner_id": self.owner_id},
+                ]
+            }
+        )
 
         if not chunks:
             return
@@ -66,6 +75,7 @@ class DocumentVectorIndex:
             metadatas=[
                 {
                     "document_id": document_id_text,
+                    "owner_id": self.owner_id,
                     "filename": filename,
                     "chunk_index": chunk.index,
                 }
@@ -78,6 +88,7 @@ class DocumentVectorIndex:
         result = collection.query(
             query_texts=[query],
             n_results=limit,
+            where={"owner_id": self.owner_id},
             include=["documents", "metadatas", "distances"],
         )
         documents = (result.get("documents") or [[]])[0]

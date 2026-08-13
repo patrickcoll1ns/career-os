@@ -1,5 +1,7 @@
 import "server-only";
 
+import { backendFetch } from "@/lib/backend-api";
+
 export type GoalStatus = "active" | "paused" | "completed";
 export type GoalHorizon = "short_term" | "long_term";
 
@@ -22,11 +24,9 @@ export type CreateGoalInput = {
   target_date?: string;
 };
 
-const apiUrl = process.env.API_URL ?? "http://localhost:8000";
-
 export async function getGoals(): Promise<Goal[] | null> {
   try {
-    const response = await fetch(`${apiUrl}/goals`, { cache: "no-store" });
+    const response = await backendFetch("/goals", { cache: "no-store" });
 
     if (!response.ok) {
       return null;
@@ -40,7 +40,7 @@ export async function getGoals(): Promise<Goal[] | null> {
 
 export async function getArchivedGoals(): Promise<Goal[] | null> {
   try {
-    const response = await fetch(`${apiUrl}/goals/archived`, {
+    const response = await backendFetch("/goals/archived", {
       cache: "no-store",
     });
 
@@ -55,7 +55,7 @@ export async function getArchivedGoals(): Promise<Goal[] | null> {
 }
 
 export async function createGoal(input: CreateGoalInput): Promise<Goal> {
-  const response = await fetch(`${apiUrl}/goals`, {
+  const response = await backendFetch("/goals", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
@@ -79,7 +79,7 @@ export async function updateGoalDetails(
   goalId: string,
   input: UpdateGoalDetailsInput,
 ): Promise<Goal> {
-  const response = await fetch(`${apiUrl}/goals/${goalId}`, {
+  const response = await backendFetch(`/goals/${goalId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
@@ -96,7 +96,7 @@ export async function updateGoalStatus(
   goalId: string,
   status: GoalStatus,
 ): Promise<Goal> {
-  const response = await fetch(`${apiUrl}/goals/${goalId}`, {
+  const response = await backendFetch(`/goals/${goalId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
@@ -110,7 +110,7 @@ export async function updateGoalStatus(
 }
 
 export async function archiveGoal(goalId: string): Promise<Goal> {
-  const response = await fetch(`${apiUrl}/goals/${goalId}/archive`, {
+  const response = await backendFetch(`/goals/${goalId}/archive`, {
     method: "POST",
   });
 
@@ -122,7 +122,7 @@ export async function archiveGoal(goalId: string): Promise<Goal> {
 }
 
 export async function restoreGoal(goalId: string): Promise<Goal> {
-  const response = await fetch(`${apiUrl}/goals/${goalId}/restore`, {
+  const response = await backendFetch(`/goals/${goalId}/restore`, {
     method: "POST",
   });
 
@@ -134,7 +134,7 @@ export async function restoreGoal(goalId: string): Promise<Goal> {
 }
 
 export async function deleteGoal(goalId: string): Promise<void> {
-  const response = await fetch(`${apiUrl}/goals/${goalId}`, {
+  const response = await backendFetch(`/goals/${goalId}`, {
     method: "DELETE",
   });
 

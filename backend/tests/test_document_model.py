@@ -4,6 +4,7 @@ from app.models.document import Document
 def test_document_table_has_expected_columns() -> None:
     assert set(Document.__table__.columns.keys()) == {
         "id",
+        "owner_id",
         "original_filename",
         "content_type",
         "size_bytes",

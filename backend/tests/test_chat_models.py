@@ -5,6 +5,7 @@ from app.models.message import Message
 def test_conversation_table_has_expected_columns() -> None:
     assert set(Conversation.__table__.columns.keys()) == {
         "id",
+        "owner_id",
         "title",
         "created_at",
         "updated_at",

@@ -4,6 +4,7 @@ from app.models.interview import InterviewSession, InterviewTurn
 def test_interview_session_table_has_expected_columns() -> None:
     assert set(InterviewSession.__table__.columns.keys()) == {
         "id",
+        "owner_id",
         "target_role",
         "interview_type",
         "difficulty",

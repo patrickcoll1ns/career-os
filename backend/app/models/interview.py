@@ -46,6 +46,7 @@ class InterviewSession(Base):
         primary_key=True,
         default=uuid.uuid4,
     )
+    owner_id: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     target_role: Mapped[str] = mapped_column(String(200), nullable=False)
     interview_type: Mapped[str] = mapped_column(String(20), nullable=False)
     difficulty: Mapped[str] = mapped_column(String(20), nullable=False)

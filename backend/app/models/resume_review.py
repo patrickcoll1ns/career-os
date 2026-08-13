@@ -32,6 +32,7 @@ class ResumeReview(Base):
         primary_key=True,
         default=uuid.uuid4,
     )
+    owner_id: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     document_id: Mapped[uuid.UUID] = mapped_column(
         Uuid,
         ForeignKey("documents.id", ondelete="CASCADE"),

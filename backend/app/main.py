@@ -1,7 +1,7 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
@@ -13,6 +13,7 @@ from app.api.routes.goals import router as goals_router
 from app.api.routes.health import router as health_router
 from app.api.routes.interviews import router as interviews_router
 from app.api.routes.resume_reviews import router as resume_reviews_router
+from app.core.auth import require_user
 from app.core.config import settings
 from app.db.session import engine
 
@@ -58,12 +59,13 @@ def create_app() -> FastAPI:
         allow_headers=["Content-Type"],
     )
     application.include_router(health_router)
-    application.include_router(goals_router)
-    application.include_router(accomplishments_router)
-    application.include_router(chat_router)
-    application.include_router(documents_router)
-    application.include_router(resume_reviews_router)
-    application.include_router(interviews_router)
+    protected = [Depends(require_user)]
+    application.include_router(goals_router, dependencies=protected)
+    application.include_router(accomplishments_router, dependencies=protected)
+    application.include_router(chat_router, dependencies=protected)
+    application.include_router(documents_router, dependencies=protected)
+    application.include_router(resume_reviews_router, dependencies=protected)
+    application.include_router(interviews_router, dependencies=protected)
 
     return application
 

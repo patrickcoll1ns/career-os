@@ -1,5 +1,7 @@
 import "server-only";
 
+import { backendFetch } from "@/lib/backend-api";
+
 export type ReviewFinding = {
   title: string;
   evidence: string;
@@ -26,8 +28,6 @@ export type ResumeReview = {
   updated_at: string;
 };
 
-const apiUrl = process.env.API_URL ?? "http://localhost:8000";
-
 export class ResumeReviewError extends Error {}
 
 async function responseError(response: Response, fallback: string) {
@@ -41,7 +41,7 @@ async function responseError(response: Response, fallback: string) {
 
 export async function getResumeReviews(): Promise<ResumeReview[] | null> {
   try {
-    const response = await fetch(`${apiUrl}/resume-reviews`, { cache: "no-store" });
+    const response = await backendFetch("/resume-reviews", { cache: "no-store" });
     if (!response.ok) return null;
     return response.json();
   } catch {
@@ -51,7 +51,7 @@ export async function getResumeReviews(): Promise<ResumeReview[] | null> {
 
 export async function getResumeReview(reviewId: string): Promise<ResumeReview | null> {
   try {
-    const response = await fetch(`${apiUrl}/resume-reviews/${reviewId}`, {
+    const response = await backendFetch(`/resume-reviews/${reviewId}`, {
       cache: "no-store",
     });
     if (!response.ok) return null;
@@ -65,7 +65,7 @@ export async function createResumeReview(
   documentId: string,
   targetRole?: string,
 ): Promise<ResumeReview> {
-  const response = await fetch(`${apiUrl}/resume-reviews`, {
+  const response = await backendFetch("/resume-reviews", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { backendFetch } from "@/lib/backend-api";
+
 export type InterviewType = "behavioral" | "technical" | "mixed";
 export type InterviewDifficulty = "introductory" | "intermediate" | "advanced";
 export type InterviewStatus = "active" | "completed" | "abandoned";
@@ -46,8 +48,6 @@ export type InterviewSessionWithTurns = InterviewSession & {
   turns: InterviewTurn[];
 };
 
-const apiUrl = process.env.API_URL ?? "http://localhost:8000";
-
 export class InterviewError extends Error {}
 
 async function responseError(response: Response, fallback: string) {
@@ -61,7 +61,7 @@ async function responseError(response: Response, fallback: string) {
 
 export async function getInterviewSessions(): Promise<InterviewSession[] | null> {
   try {
-    const response = await fetch(`${apiUrl}/interviews`, { cache: "no-store" });
+    const response = await backendFetch("/interviews", { cache: "no-store" });
     if (!response.ok) return null;
     return response.json();
   } catch {
@@ -73,7 +73,7 @@ export async function getInterviewSession(
   sessionId: string,
 ): Promise<InterviewSessionWithTurns | null> {
   try {
-    const response = await fetch(`${apiUrl}/interviews/${sessionId}`, {
+    const response = await backendFetch(`/interviews/${sessionId}`, {
       cache: "no-store",
     });
     if (!response.ok) return null;
@@ -89,7 +89,7 @@ export async function createInterviewSession(
   difficulty: InterviewDifficulty,
   questionLimit: number,
 ): Promise<InterviewSessionWithTurns> {
-  const response = await fetch(`${apiUrl}/interviews`, {
+  const response = await backendFetch("/interviews", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -117,7 +117,7 @@ export async function submitInterviewAnswer(
   sessionId: string,
   answer: string,
 ): Promise<InterviewSessionWithTurns> {
-  const response = await fetch(`${apiUrl}/interviews/${sessionId}/answers`, {
+  const response = await backendFetch(`/interviews/${sessionId}/answers`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ answer }),

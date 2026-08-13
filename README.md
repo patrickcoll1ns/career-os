@@ -25,7 +25,8 @@ PostgreSQL owns the saved goals, accomplishments, conversations, and messages. F
 
 ## One-time setup
 
-You need Node.js, Python 3.12 or newer, Docker Desktop, and `make`. On macOS, `make` is included with the Xcode command-line tools.
+You need Node.js, Python 3.12 or newer, Docker Desktop, a GitHub OAuth app,
+and `make`. On macOS, `make` is included with the Xcode command-line tools.
 
 From the repository root:
 
@@ -35,7 +36,13 @@ cp .env.example .env
 cp frontend/.env.example frontend/.env.local
 ```
 
-Replace `ANTHROPIC_API_KEY` in the ignored root `.env` file to enable live copilot replies. You can also override `ANTHROPIC_MODEL`; the local default is Claude Sonnet 5. Never commit either copied environment file.
+Replace `ANTHROPIC_API_KEY` in the ignored root `.env` file to enable live
+copilot replies. Generate one strong shared `INTERNAL_AUTH_SECRET` and place the
+same value in both ignored environment files. Add `AUTH_GITHUB_ID`,
+`AUTH_GITHUB_SECRET`, and a separately generated `AUTH_SECRET` to
+`frontend/.env.local`. Configure the GitHub OAuth callback URL as
+`http://localhost:3000/api/auth/callback/github`. Never commit either copied
+environment file.
 
 ## Run the app
 

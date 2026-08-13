@@ -17,6 +17,7 @@ class Conversation(Base):
         primary_key=True,
         default=uuid.uuid4,
     )
+    owner_id: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     title: Mapped[str | None] = mapped_column(String(200), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

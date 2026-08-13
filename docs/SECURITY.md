@@ -2,16 +2,15 @@
 
 ## Current deployment boundary
 
-CareerOS is currently a single-user development application. It has no end-user
-authentication and its database records and vector index are not partitioned by
-user. Do not expose the frontend, FastAPI, PostgreSQL, ChromaDB, or uploaded-file
-directory to the public internet in this state.
+CareerOS uses GitHub OAuth through Auth.js. Next.js derives a stable provider user
+ID from the authenticated session and signs short-lived identity headers sent to
+FastAPI. FastAPI verifies those headers before resolving protected routes. Parent
+database records and Chroma metadata are scoped to that owner ID; child messages
+and interview turns are authorized through their parent.
 
-Authentication and per-user authorization are release blockers for a public,
-multi-user v1. Every database query, uploaded object, and Chroma record must be
-scoped to the authenticated user before public deployment. Hiding the FastAPI URL,
-adding CORS, or placing a shared API key between services does not provide that
-isolation.
+Development mode may run without the internal signing secret and uses the explicit
+`development:local` owner. Production configuration fails closed when
+`INTERNAL_AUTH_SECRET` is absent. Do not expose development mode publicly.
 
 ## Implemented controls
 
@@ -34,17 +33,20 @@ isolation.
 - CORS is limited to configured origins, necessary methods, and the content-type
   header.
 - Local PostgreSQL and ChromaDB ports bind only to the loopback interface.
+- GitHub OAuth protects application routes, and Auth.js manages encrypted session
+  cookies.
+- FastAPI verifies HMAC-signed user IDs with a 60-second replay window.
+- PostgreSQL and Chroma operations filter records by the verified owner ID.
 - API documentation can be disabled with `EXPOSE_API_DOCS=false`.
 
 ## Public v1 checklist
 
-- [ ] Select an identity provider and validate sessions on both Next.js and
-  FastAPI.
-- [ ] Add immutable user IDs and ownership constraints to every authoritative
-  table.
-- [ ] Apply ownership filters to every read, update, archive, delete, AI-context,
+- [x] Select an identity provider and validate identity at both Next.js and
+  FastAPI boundaries.
+- [x] Add immutable owner IDs to every authoritative parent table.
+- [x] Apply ownership filters to every read, update, archive, delete, AI-context,
   and document operation.
-- [ ] Partition Chroma records and searches by user ID.
+- [x] Partition Chroma records and searches by owner ID.
 - [ ] Migrate existing single-user records to an explicitly selected owner.
 - [ ] Add cross-user authorization tests for every resource type.
 - [ ] Add rate limits for authentication, upload, chat, review, and interview

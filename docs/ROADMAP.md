@@ -59,11 +59,12 @@ per-answer scoring, and completed with a structured debrief.
 
 ## Checkpoint 7 — Portfolio release
 
-- Add authentication and user isolation.
+- Add authentication and user isolation. (Implemented; deployment verification pending.)
 - Improve accessibility and responsive design.
 - Add demo data, screenshots, tests, and deployment documentation.
 - Deploy the frontend, API, PostgreSQL, and vector storage.
 
-In progress: upload/extraction hardening, security headers, narrowed CORS, and the
-public-release security checklist are complete. Authentication and user isolation
-remain required before public deployment.
+In progress: GitHub authentication, signed backend identity, per-user database and
+vector isolation, upload/extraction hardening, security headers, and narrowed CORS
+are implemented. Deployment verification, accessibility, release assets, and
+operational controls remain.

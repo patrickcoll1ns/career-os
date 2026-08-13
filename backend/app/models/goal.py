@@ -27,6 +27,7 @@ class Goal(Base):
         primary_key=True,
         default=uuid.uuid4,
     )
+    owner_id: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(

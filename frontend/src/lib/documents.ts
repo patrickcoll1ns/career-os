@@ -1,5 +1,7 @@
 import "server-only";
 
+import { backendFetch } from "@/lib/backend-api";
+
 export type CareerDocument = {
   id: string;
   original_filename: string;
@@ -12,13 +14,11 @@ export type CareerDocument = {
   updated_at: string;
 };
 
-const apiUrl = process.env.API_URL ?? "http://localhost:8000";
-
 export class DocumentUploadError extends Error {}
 
 export async function getDocuments(): Promise<CareerDocument[] | null> {
   try {
-    const response = await fetch(`${apiUrl}/documents`, { cache: "no-store" });
+    const response = await backendFetch("/documents", { cache: "no-store" });
 
     if (!response.ok) {
       return null;
@@ -33,7 +33,7 @@ export async function getDocuments(): Promise<CareerDocument[] | null> {
 export async function uploadDocument(file: File): Promise<CareerDocument> {
   const body = new FormData();
   body.set("file", file);
-  const response = await fetch(`${apiUrl}/documents`, {
+  const response = await backendFetch("/documents", {
     method: "POST",
     body,
   });

@@ -24,6 +24,7 @@ class Document(Base):
         primary_key=True,
         default=uuid.uuid4,
     )
+    owner_id: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     content_type: Mapped[str] = mapped_column(String(100), nullable=False)
     size_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)

@@ -1,6 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
+from pydantic import SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIRECTORY = Path(__file__).resolve().parents[2]
@@ -20,6 +22,8 @@ class Settings(BaseSettings):
     document_upload_directory: Path = REPOSITORY_ROOT / "data" / "uploads"
     max_document_size_bytes: int = 5 * 1024 * 1024
     expose_api_docs: bool = True
+    environment: Literal["development", "production", "test"] = "development"
+    internal_auth_secret: SecretStr | None = None
 
     model_config = SettingsConfigDict(
         env_file=(BACKEND_DIRECTORY / ".env", REPOSITORY_ROOT / ".env"),
@@ -34,6 +38,18 @@ class Settings(BaseSettings):
             for origin in self.backend_cors_origins.split(",")
             if origin.strip()
         ]
+
+    @model_validator(mode="after")
+    def validate_production_security(self) -> "Settings":
+        if self.environment == "production" and (
+            self.internal_auth_secret is None
+            or len(self.internal_auth_secret.get_secret_value()) < 32
+        ):
+            raise ValueError(
+                "INTERNAL_AUTH_SECRET must contain at least 32 characters "
+                "in production."
+            )
+        return self
 
 
 @lru_cache

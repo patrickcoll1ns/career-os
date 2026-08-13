@@ -4,6 +4,7 @@ from app.models.goal import Goal
 def test_goal_table_has_expected_columns() -> None:
     assert set(Goal.__table__.columns.keys()) == {
         "id",
+        "owner_id",
         "title",
         "description",
         "status",

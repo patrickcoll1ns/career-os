@@ -3,11 +3,9 @@ type HealthResponse = {
   service: string;
 };
 
-const apiUrl = process.env.API_URL ?? "http://localhost:8000";
-
 export async function getApiHealth(): Promise<HealthResponse | null> {
   try {
-    const response = await fetch(`${apiUrl}/health`, {
+    const response = await backendFetch("/health", {
       cache: "no-store",
       signal: AbortSignal.timeout(1500),
     });
@@ -22,3 +20,4 @@ export async function getApiHealth(): Promise<HealthResponse | null> {
     return null;
   }
 }
+import { backendFetch } from "@/lib/backend-api";

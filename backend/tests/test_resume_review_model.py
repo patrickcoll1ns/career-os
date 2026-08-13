@@ -4,6 +4,7 @@ from app.models.resume_review import ResumeReview
 def test_resume_review_table_has_expected_columns() -> None:
     assert set(ResumeReview.__table__.columns.keys()) == {
         "id",
+        "owner_id",
         "document_id",
         "target_role",
         "status",
