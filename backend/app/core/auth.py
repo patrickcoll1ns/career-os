@@ -43,7 +43,8 @@ async def require_user(
     signature: Annotated[str | None, Header(alias="X-CareerOS-Signature")] = None,
 ) -> AsyncIterator[CurrentUser]:
     secret = settings.internal_auth_secret
-    if not secret and settings.environment == "development":
+    no_identity_headers = not owner_id and not timestamp and not signature
+    if settings.environment != "production" and no_identity_headers:
         token = _owner_id.set(DEVELOPMENT_OWNER_ID)
         try:
             yield CurrentUser(DEVELOPMENT_OWNER_ID)

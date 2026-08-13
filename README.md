@@ -32,17 +32,17 @@ From the repository root:
 
 ```bash
 make setup
-cp .env.example .env
-cp frontend/.env.example frontend/.env.local
 ```
 
-Replace `ANTHROPIC_API_KEY` in the ignored root `.env` file to enable live
-copilot replies. Generate one strong shared `INTERNAL_AUTH_SECRET` and place the
-same value in both ignored environment files. Add `AUTH_GITHUB_ID`,
-`AUTH_GITHUB_SECRET`, and a separately generated `AUTH_SECRET` to
-`frontend/.env.local`. Configure the GitHub OAuth callback URL as
-`http://localhost:3000/api/auth/callback/github`. Never commit either copied
-environment file.
+`make setup` creates both ignored environment files and generates the required
+local secrets without printing them. It never replaces existing values. Create a
+GitHub OAuth app, use
+`http://localhost:3000/api/auth/callback/github` as its callback URL, and add its
+client ID and secret to `frontend/.env.local` as `AUTH_GITHUB_ID` and
+`AUTH_GITHUB_SECRET`. Add `ANTHROPIC_API_KEY` to the root `.env` file to enable
+live AI replies. Never commit either environment file.
+
+Run `make configure` again at any time to create missing files or secrets safely.
 
 ## Run the app
 
@@ -83,6 +83,12 @@ make check
 ```
 
 This checks Python formatting and lint rules, runs backend tests, lints the frontend, and creates a production frontend build.
+
+Check current production dependency advisories separately when online:
+
+```bash
+make security-check
+```
 
 ## Repository layout
 

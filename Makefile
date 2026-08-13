@@ -2,13 +2,17 @@ PYTHON ?= python3
 VENV := backend/.venv
 VENV_BIN := $(VENV)/bin
 
-.PHONY: setup database database-stop database-status migrate backend frontend backend-check frontend-check check
+.PHONY: setup configure database database-stop database-status migrate backend frontend backend-check frontend-check security-check check
 
 setup:
 	$(PYTHON) -m venv $(VENV)
 	$(VENV_BIN)/python -m pip install --upgrade pip
 	$(VENV_BIN)/python -m pip install -e "backend[dev]"
 	npm --prefix frontend install
+	$(PYTHON) scripts/configure.py
+
+configure:
+	$(PYTHON) scripts/configure.py
 
 database:
 	docker compose up -d --wait postgres chroma
@@ -37,5 +41,8 @@ backend-check:
 frontend-check:
 	npm --prefix frontend run lint
 	npm --prefix frontend run build
+
+security-check:
+	npm --prefix frontend audit --omit=dev --audit-level=low
 
 check: backend-check frontend-check

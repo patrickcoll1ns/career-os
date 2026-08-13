@@ -8,9 +8,10 @@ FastAPI. FastAPI verifies those headers before resolving protected routes. Paren
 database records and Chroma metadata are scoped to that owner ID; child messages
 and interview turns are authorized through their parent.
 
-Development mode may run without the internal signing secret and uses the explicit
-`development:local` owner. Production configuration fails closed when
-`INTERNAL_AUTH_SECRET` is absent. Do not expose development mode publicly.
+Development and test modes permit unsigned local API requests and assign them to
+the explicit `development:local` owner, keeping tests and local API exploration
+simple. Production requires valid signed identity headers and fails closed when
+`INTERNAL_AUTH_SECRET` is absent or weak. Do not expose development mode publicly.
 
 ## Implemented controls
 
@@ -37,6 +38,8 @@ Development mode may run without the internal signing secret and uses the explic
   cookies.
 - FastAPI verifies HMAC-signed user IDs with a 60-second replay window.
 - PostgreSQL and Chroma operations filter records by the verified owner ID.
+- npm overrides keep transitive dependencies on patched compatible releases;
+  `make security-check` queries the current production advisory database.
 - API documentation can be disabled with `EXPOSE_API_DOCS=false`.
 
 ## Public v1 checklist
