@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     chroma_max_distance: float = 1.6
     document_upload_directory: Path = REPOSITORY_ROOT / "data" / "uploads"
     max_document_size_bytes: int = 5 * 1024 * 1024
+    expose_api_docs: bool = True
 
     model_config = SettingsConfigDict(
         env_file=(BACKEND_DIRECTORY / ".env", REPOSITORY_ROOT / ".env"),

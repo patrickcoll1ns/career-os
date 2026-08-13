@@ -2,7 +2,8 @@
 
 CareerOS is an AI-powered career copilot for planning and documenting career growth. The portfolio MVP currently includes persistent goals and accomplishments, Claude-powered conversations grounded in that structured career context, resume review, and mock interviews.
 
-Planned capabilities include authentication, per-user isolation, and deployment.
+Checkpoint 7 release work is in progress. Authentication, per-user isolation, and
+deployment remain required before the app can be exposed publicly.
 
 ## Technology
 
@@ -89,9 +90,16 @@ career-os-app/
 ```
 
 See [the architecture](docs/ARCHITECTURE.md) for system boundaries and [the roadmap](docs/ROADMAP.md) for the incremental build plan.
+See [the security policy](docs/SECURITY.md) before deploying or using real career
+documents.
 
 ## Current milestone
 
 Checkpoint 4 document ingestion and grounded chat are complete. Checkpoint 5 resume review is complete: users can select an indexed document, optionally target a role, generate a validated structured Claude review, browse saved history, and inspect evidence-backed strengths, gaps, and rewrite suggestions.
 
 Checkpoint 6 mock interviews are complete: users configure a target role, interview type, difficulty, and question count, then answer Claude's questions one at a time. Each answer is scored out of five with specific feedback, and finishing the session produces a structured debrief of strengths, improvements, and what to learn next.
+
+Checkpoint 7 is in progress. The current security baseline includes hardened
+document validation and extraction limits, narrowed CORS, security response
+headers, and an explicit public-release checklist. End-user authentication and
+per-user data isolation remain public-release blockers.

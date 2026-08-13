@@ -18,7 +18,7 @@ class GoalHorizon(str, Enum):
 
 class GoalCreate(BaseModel):
     title: str = Field(min_length=1, max_length=200)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=5000)
     horizon: GoalHorizon = GoalHorizon.SHORT_TERM
     target_date: date | None = None
 
@@ -33,7 +33,7 @@ class GoalCreate(BaseModel):
 
 class GoalUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=200)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=5000)
     status: GoalStatus | None = None
     horizon: GoalHorizon | None = None
     target_date: date | None = None

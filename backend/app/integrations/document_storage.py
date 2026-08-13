@@ -1,5 +1,6 @@
 import hashlib
 import uuid
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -12,6 +13,8 @@ ALLOWED_DOCUMENT_TYPES = {
     ".txt": "text/plain",
 }
 READ_CHUNK_SIZE = 64 * 1024
+MAX_FILENAME_LENGTH = 255
+DOCX_REQUIRED_MEMBERS = {"[Content_Types].xml", "word/document.xml"}
 
 
 class InvalidDocumentError(ValueError):
@@ -43,7 +46,12 @@ class LocalDocumentStorage:
         suffix = Path(original_filename).suffix.lower()
         content_type = upload.content_type or ""
 
-        if not original_filename or suffix not in ALLOWED_DOCUMENT_TYPES:
+        if (
+            not original_filename
+            or len(original_filename) > MAX_FILENAME_LENGTH
+            or any(ord(character) < 32 for character in original_filename)
+            or suffix not in ALLOWED_DOCUMENT_TYPES
+        ):
             raise InvalidDocumentError("Upload a PDF, DOCX, or plain-text file.")
         if content_type != ALLOWED_DOCUMENT_TYPES[suffix]:
             raise InvalidDocumentError(
@@ -66,6 +74,14 @@ class LocalDocumentStorage:
                         )
                     digest.update(chunk)
                     await stored_file.write(chunk)
+
+            if size_bytes == 0:
+                raise InvalidDocumentError("The uploaded document is empty.")
+            await anyio.to_thread.run_sync(
+                self._validate_file_signature,
+                destination,
+                suffix,
+            )
         except Exception:
             destination.unlink(missing_ok=True)
             raise
@@ -81,7 +97,33 @@ class LocalDocumentStorage:
         )
 
     def delete(self, storage_key: str) -> None:
-        (self.directory / storage_key).unlink(missing_ok=True)
+        self.path_for(storage_key).unlink(missing_ok=True)
 
     def path_for(self, storage_key: str) -> Path:
+        key_path = Path(storage_key)
+        try:
+            uuid.UUID(key_path.stem)
+        except ValueError as error:
+            raise InvalidDocumentError("Invalid document storage key.") from error
+        if (
+            key_path.name != storage_key
+            or key_path.suffix.lower() not in ALLOWED_DOCUMENT_TYPES
+        ):
+            raise InvalidDocumentError("Invalid document storage key.")
         return self.directory / storage_key
+
+    @staticmethod
+    def _validate_file_signature(path: Path, suffix: str) -> None:
+        with path.open("rb") as document:
+            signature = document.read(8)
+
+        if suffix == ".pdf" and not signature.startswith(b"%PDF-"):
+            raise InvalidDocumentError("The uploaded file is not a valid PDF.")
+        if suffix == ".docx":
+            if not signature.startswith(b"PK") or not zipfile.is_zipfile(path):
+                raise InvalidDocumentError("The uploaded file is not a valid DOCX.")
+            with zipfile.ZipFile(path) as archive:
+                if not DOCX_REQUIRED_MEMBERS.issubset(archive.namelist()):
+                    raise InvalidDocumentError("The uploaded file is not a valid DOCX.")
+        if suffix == ".txt" and b"\x00" in signature:
+            raise InvalidDocumentError("The uploaded file is not plain text.")

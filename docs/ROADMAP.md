@@ -63,3 +63,7 @@ per-answer scoring, and completed with a structured debrief.
 - Improve accessibility and responsive design.
 - Add demo data, screenshots, tests, and deployment documentation.
 - Deploy the frontend, API, PostgreSQL, and vector storage.
+
+In progress: upload/extraction hardening, security headers, narrowed CORS, and the
+public-release security checklist are complete. Authentication and user isolation
+remain required before public deployment.

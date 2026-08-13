@@ -56,3 +56,46 @@ def test_storage_removes_a_file_that_exceeds_the_limit(tmp_path) -> None:
         asyncio.run(storage.save(upload))
 
     assert list(tmp_path.iterdir()) == []
+
+
+def test_storage_rejects_an_empty_file(tmp_path) -> None:
+    storage = LocalDocumentStorage(tmp_path, max_size_bytes=1024)
+    upload = make_upload("resume.txt", "text/plain", b"")
+
+    with pytest.raises(InvalidDocumentError, match="empty"):
+        asyncio.run(storage.save(upload))
+
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_storage_rejects_a_spoofed_pdf(tmp_path) -> None:
+    storage = LocalDocumentStorage(tmp_path, max_size_bytes=1024)
+    upload = make_upload("resume.pdf", "application/pdf", b"not really a PDF")
+
+    with pytest.raises(InvalidDocumentError, match="valid PDF"):
+        asyncio.run(storage.save(upload))
+
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_storage_rejects_a_spoofed_docx(tmp_path) -> None:
+    storage = LocalDocumentStorage(tmp_path, max_size_bytes=1024)
+    upload = make_upload(
+        "resume.docx",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        b"PK but not a zip archive",
+    )
+
+    with pytest.raises(InvalidDocumentError, match="valid DOCX"):
+        asyncio.run(storage.save(upload))
+
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_storage_rejects_unsafe_storage_keys(tmp_path) -> None:
+    storage = LocalDocumentStorage(tmp_path, max_size_bytes=1024)
+
+    with pytest.raises(InvalidDocumentError, match="storage key"):
+        storage.path_for("../outside.txt")
+    with pytest.raises(InvalidDocumentError, match="storage key"):
+        storage.path_for("not-a-generated-id.txt")

@@ -25,9 +25,27 @@ class DocumentVectorIndex:
         collection_name: str = "career_documents",
         max_distance: float = 1.6,
     ) -> None:
-        self.client = chromadb.HttpClient(host=host, port=port)
+        self.host = host
+        self.port = port
+        self._client: chromadb.ClientAPI | None = None
         self.collection_name = collection_name
         self.max_distance = max_distance
+
+    @property
+    def client(self) -> chromadb.ClientAPI:
+        """Connect only when an index operation is actually requested.
+
+        FastAPI resolves dependencies before validating a request body. Keeping the
+        Chroma connection lazy means invalid requests can be rejected locally and
+        availability checks do not become an accidental denial-of-service vector.
+        """
+        if self._client is None:
+            self._client = chromadb.HttpClient(host=self.host, port=self.port)
+        return self._client
+
+    @client.setter
+    def client(self, value: chromadb.ClientAPI) -> None:
+        self._client = value
 
     def index(
         self,
