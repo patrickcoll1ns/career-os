@@ -25,7 +25,7 @@ PostgreSQL owns the saved goals, accomplishments, conversations, and messages. F
 
 ## One-time setup
 
-You need Node.js, Python 3.12 or newer, Docker Desktop, a GitHub OAuth app,
+You need Node.js, Python 3.12 or newer, Docker Desktop, a Google OAuth client,
 and `make`. On macOS, `make` is included with the Xcode command-line tools.
 
 From the repository root:
@@ -36,10 +36,10 @@ make setup
 
 `make setup` creates both ignored environment files and generates the required
 local secrets without printing them. It never replaces existing values. Create a
-GitHub OAuth app, use
-`http://localhost:3000/api/auth/callback/github` as its callback URL, and add its
-client ID and secret to `frontend/.env.local` as `AUTH_GITHUB_ID` and
-`AUTH_GITHUB_SECRET`. Add `ANTHROPIC_API_KEY` to the root `.env` file to enable
+Google OAuth client, use
+`http://localhost:3000/api/auth/callback/google` as its authorized redirect URI,
+and add its client ID and secret to `frontend/.env.local` as `AUTH_GOOGLE_ID` and
+`AUTH_GOOGLE_SECRET`. Add `ANTHROPIC_API_KEY` to the root `.env` file to enable
 live AI replies. Never commit either environment file.
 
 Run `make configure` again at any time to create missing files or secrets safely.

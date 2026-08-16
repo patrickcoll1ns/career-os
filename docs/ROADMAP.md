@@ -64,7 +64,7 @@ per-answer scoring, and completed with a structured debrief.
 - Add demo data, screenshots, tests, and deployment documentation.
 - Deploy the frontend, API, PostgreSQL, and vector storage.
 
-In progress: GitHub authentication, signed backend identity, per-user database and
+In progress: Google authentication, signed backend identity, per-user database and
 vector isolation, upload/extraction hardening, security headers, and narrowed CORS
 are implemented. Deployment verification, accessibility, release assets, and
 operational controls remain.

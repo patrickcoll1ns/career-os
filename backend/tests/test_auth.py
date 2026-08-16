@@ -46,7 +46,7 @@ def test_protected_routes_accept_a_valid_signed_identity(monkeypatch) -> None:
     app.dependency_overrides[get_goal_service] = lambda: service
 
     try:
-        response = client.get("/goals", headers=signed_headers("github:123"))
+        response = client.get("/goals", headers=signed_headers("google:123"))
     finally:
         app.dependency_overrides.pop(get_goal_service, None)
 
@@ -59,7 +59,7 @@ def test_protected_routes_reject_replayed_signatures(monkeypatch) -> None:
 
     response = client.get(
         "/goals",
-        headers=signed_headers("github:123", int(time.time()) - 120),
+        headers=signed_headers("google:123", int(time.time()) - 120),
     )
 
     assert response.status_code == 401
@@ -67,8 +67,8 @@ def test_protected_routes_reject_replayed_signatures(monkeypatch) -> None:
 
 def test_protected_routes_reject_a_tampered_owner(monkeypatch) -> None:
     configure_production_auth(monkeypatch)
-    headers = signed_headers("github:123")
-    headers["X-CareerOS-User"] = "github:456"
+    headers = signed_headers("google:123")
+    headers["X-CareerOS-User"] = "google:456"
 
     response = client.get("/goals", headers=headers)
 

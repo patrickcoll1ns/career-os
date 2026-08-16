@@ -8,7 +8,7 @@ from app.integrations.document_index import DocumentVectorIndex
 def build_index(client: Mock) -> DocumentVectorIndex:
     index = DocumentVectorIndex.__new__(DocumentVectorIndex)
     index.client = client
-    index.owner_id = "github:123"
+    index.owner_id = "google:123"
     index.collection_name = "career_documents"
     index.max_distance = 1.6
     return index
@@ -32,7 +32,7 @@ def test_index_replaces_document_chunks_with_stable_ids_and_metadata() -> None:
         where={
             "$and": [
                 {"document_id": str(document_id)},
-                {"owner_id": "github:123"},
+                {"owner_id": "google:123"},
             ]
         }
     )
@@ -42,13 +42,13 @@ def test_index_replaces_document_chunks_with_stable_ids_and_metadata() -> None:
         metadatas=[
             {
                 "document_id": str(document_id),
-                "owner_id": "github:123",
+                "owner_id": "google:123",
                 "filename": "resume.pdf",
                 "chunk_index": 0,
             },
             {
                 "document_id": str(document_id),
-                "owner_id": "github:123",
+                "owner_id": "google:123",
                 "filename": "resume.pdf",
                 "chunk_index": 1,
             },
@@ -92,7 +92,7 @@ def test_search_returns_typed_chunks_with_source_metadata() -> None:
     collection.query.assert_called_once_with(
         query_texts=["backend experience"],
         n_results=4,
-        where={"owner_id": "github:123"},
+        where={"owner_id": "google:123"},
         include=["documents", "metadatas", "distances"],
     )
     assert len(chunks) == 1

@@ -18,14 +18,14 @@ export default function SignInPage() {
           className="mt-8"
           action={async () => {
             "use server";
-            await signIn("github", { redirectTo: "/" });
+            await signIn("google", { redirectTo: "/" });
           }}
         >
           <button
             className="w-full rounded-xl bg-[#203329] px-5 py-3 font-semibold text-white transition hover:bg-[#314d3d]"
             type="submit"
           >
-            Continue with GitHub
+            Continue with Google
           </button>
         </form>
       </section>

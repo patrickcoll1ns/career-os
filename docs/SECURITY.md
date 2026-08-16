@@ -2,7 +2,7 @@
 
 ## Current deployment boundary
 
-CareerOS uses GitHub OAuth through Auth.js. Next.js derives a stable provider user
+CareerOS uses Google OAuth through Auth.js. Next.js derives a stable provider user
 ID from the authenticated session and signs short-lived identity headers sent to
 FastAPI. FastAPI verifies those headers before resolving protected routes. Parent
 database records and Chroma metadata are scoped to that owner ID; child messages
@@ -34,7 +34,7 @@ simple. Production requires valid signed identity headers and fails closed when
 - CORS is limited to configured origins, necessary methods, and the content-type
   header.
 - Local PostgreSQL and ChromaDB ports bind only to the loopback interface.
-- GitHub OAuth protects application routes, and Auth.js manages encrypted session
+- Google OAuth protects application routes, and Auth.js manages encrypted session
   cookies.
 - FastAPI verifies HMAC-signed user IDs with a 60-second replay window.
 - PostgreSQL and Chroma operations filter records by the verified owner ID.

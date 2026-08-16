@@ -13,6 +13,7 @@ def ensure_file(destination: Path, template: Path) -> None:
     if not destination.exists():
         shutil.copyfile(template, destination)
         print(f"Created {destination.relative_to(ROOT)}")
+    destination.chmod(0o600)
 
 
 def read_value(path: Path, key: str) -> str:
@@ -39,6 +40,14 @@ def set_blank_value(path: Path, key: str, value: str) -> None:
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def remove_values(path: Path, keys: set[str]) -> None:
+    prefixes = tuple(f"{key}=" for key in keys)
+    lines = path.read_text(encoding="utf-8").splitlines()
+    filtered = [line for line in lines if not line.startswith(prefixes)]
+    if filtered != lines:
+        path.write_text("\n".join(filtered) + "\n", encoding="utf-8")
+
+
 def main() -> None:
     ensure_file(BACKEND_ENV, ROOT / ".env.example")
     ensure_file(FRONTEND_ENV, ROOT / "frontend" / ".env.example")
@@ -55,21 +64,24 @@ def main() -> None:
     set_blank_value(BACKEND_ENV, "INTERNAL_AUTH_SECRET", internal_secret)
     set_blank_value(FRONTEND_ENV, "INTERNAL_AUTH_SECRET", internal_secret)
     set_blank_value(FRONTEND_ENV, "AUTH_SECRET", secrets.token_urlsafe(48))
+    set_blank_value(FRONTEND_ENV, "AUTH_GOOGLE_ID", "")
+    set_blank_value(FRONTEND_ENV, "AUTH_GOOGLE_SECRET", "")
+    remove_values(FRONTEND_ENV, {"AUTH_GITHUB_ID", "AUTH_GITHUB_SECRET"})
 
     missing = [
         key
-        for key in ("AUTH_GITHUB_ID", "AUTH_GITHUB_SECRET")
+        for key in ("AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET")
         if not read_value(FRONTEND_ENV, key)
     ]
     print("Local secrets are configured and were not printed.")
     if missing:
         print(
-            "Next: add AUTH_GITHUB_ID and AUTH_GITHUB_SECRET to "
+            "Next: add AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET to "
             "frontend/.env.local."
         )
         print(
-            "GitHub callback URL: "
-            "http://localhost:3000/api/auth/callback/github"
+            "Google redirect URI: "
+            "http://localhost:3000/api/auth/callback/google"
         )
 
 
