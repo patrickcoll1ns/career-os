@@ -110,11 +110,10 @@ make claim-owner OWNER=google:1234    # move pre-auth records to an account
 
 ```text
 career-os-app/
-├── backend/         # FastAPI application, migrations, and tests
+├── backend/         # FastAPI application, migrations, tests, and deploy config
 ├── docs/            # Architecture decisions and roadmap
 ├── frontend/        # Next.js application
 ├── compose.yaml     # Local PostgreSQL service
-├── fly.toml         # Backend deployment configuration
 ├── Makefile         # Short, repeatable development commands
 └── README.md
 ```

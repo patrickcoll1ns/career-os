@@ -77,11 +77,14 @@ Vercel only. Use different values from your local `.env` files.
 
 ## 5. Deploy the backend to Fly
 
-`fly.toml` in the repository root already pins the safe values:
+`backend/fly.toml` already pins the safe values:
 `ENVIRONMENT=production`, `EXPOSE_API_DOCS=false`, and
 `DOCUMENT_STORAGE_BACKEND=s3`. Everything secret is set separately:
 
+Run these from `backend/`, which is the build context the Dockerfile expects:
+
 ```bash
+cd backend
 fly launch --no-deploy --copy-config --name careeros-api
 fly secrets set \
   INTERNAL_AUTH_SECRET="…" \

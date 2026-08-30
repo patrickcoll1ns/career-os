@@ -1,10 +1,13 @@
 # Fly.io configuration for the CareerOS FastAPI backend.
-# Deploy from the repository root: fly deploy
+#
+# Lives beside the Dockerfile because Fly uses the directory it is run from as
+# the build context, and the Dockerfile's COPY paths are relative to backend/.
+# Deploy with: cd backend && fly deploy
 app = "careeros-api"
 primary_region = "iad"
 
 [build]
-  dockerfile = "backend/Dockerfile"
+  dockerfile = "Dockerfile"
 
 [deploy]
   # Migrations run once per release, before the new machines take traffic.
