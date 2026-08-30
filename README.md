@@ -2,26 +2,33 @@
 
 CareerOS is an AI-powered career copilot for planning and documenting career growth. The portfolio MVP currently includes persistent goals and accomplishments, Claude-powered conversations grounded in that structured career context, resume review, and mock interviews.
 
-Checkpoint 7 release work is in progress. Authentication, per-user isolation, and
-deployment remain required before the app can be exposed publicly.
+Authentication, per-user isolation, and a safe-by-default deployment path are in
+place. See [the deployment runbook](docs/DEPLOYMENT.md) to put it online.
 
 ## Technology
 
 - Next.js, React, TypeScript, and Tailwind CSS
 - FastAPI, SQLAlchemy, Alembic, and Python
-- PostgreSQL 17 in Docker Compose
-- Anthropic Claude API
-- Chroma vector storage for document embeddings
+- PostgreSQL 17 with `pgvector`, in Docker Compose locally
+- Anthropic Claude API for coaching, resume review, and interviews
+- Voyage AI embeddings for document search
+- S3-compatible object storage for uploaded documents in deployments
 
 ## How the current app works
 
 ```text
-Browser -> Next.js -> FastAPI -> PostgreSQL
+Browser -> Next.js -> FastAPI -> PostgreSQL (records + pgvector embeddings)
                          |
-                         `-> Anthropic Claude
+                         |-> Object storage (uploaded documents)
+                         |-> Anthropic Claude
+                         `-> Voyage AI
 ```
 
-PostgreSQL owns the saved goals, accomplishments, conversations, and messages. FastAPI validates requests and contains the application logic. Next.js renders the interface and uses server actions to communicate with FastAPI. The Anthropic API key stays in the backend environment and is never sent to browser code.
+PostgreSQL owns the saved goals, accomplishments, conversations, messages, and
+document embeddings. FastAPI validates requests and contains the application
+logic. Next.js renders the interface and uses server actions to communicate with
+FastAPI, signing a short-lived identity header on every call. Provider API keys
+stay in the backend environment and are never sent to browser code.
 
 ## One-time setup
 
@@ -40,7 +47,9 @@ Google OAuth client, use
 `http://localhost:3000/api/auth/callback/google` as its authorized redirect URI,
 and add its client ID and secret to `frontend/.env.local` as `AUTH_GOOGLE_ID` and
 `AUTH_GOOGLE_SECRET`. Add `ANTHROPIC_API_KEY` to the root `.env` file to enable
-live AI replies. Never commit either environment file.
+live AI replies, and `VOYAGE_API_KEY` to enable document search. Without a Voyage
+key, uploads still succeed but the copilot answers from goals and accomplishments
+only. Never commit either environment file.
 
 Run `make configure` again at any time to create missing files or secrets safely.
 
@@ -48,7 +57,7 @@ Run `make configure` again at any time to create missing files or secrets safely
 
 Keep Docker Desktop open, then use three VS Code terminals from the repository root.
 
-Terminal 1 starts PostgreSQL and ChromaDB, then applies database migrations:
+Terminal 1 starts PostgreSQL, then applies database migrations:
 
 ```bash
 make database
@@ -68,7 +77,7 @@ make frontend
 
 Open [http://localhost:3000](http://localhost:3000) for the dashboard, [http://localhost:3000/documents](http://localhost:3000/documents) for document uploads, [http://localhost:3000/chat](http://localhost:3000/chat) for the career copilot, [http://localhost:3000/resume-reviews](http://localhost:3000/resume-reviews) for resume feedback, and [http://localhost:3000/interviews](http://localhost:3000/interviews) for mock interviews. FastAPI's interactive API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs).
 
-Stop either development server with `Control-C`. Stop PostgreSQL and ChromaDB without deleting saved data with:
+Stop either development server with `Control-C`. Stop PostgreSQL without deleting saved data with:
 
 ```bash
 make database-stop
@@ -90,6 +99,13 @@ Check current production dependency advisories separately when online:
 make security-check
 ```
 
+Two maintenance commands are available once the app is running:
+
+```bash
+make reindex                          # rebuild embeddings from stored text
+make claim-owner OWNER=google:1234    # move pre-auth records to an account
+```
+
 ## Repository layout
 
 ```text
@@ -98,21 +114,25 @@ career-os-app/
 ├── docs/            # Architecture decisions and roadmap
 ├── frontend/        # Next.js application
 ├── compose.yaml     # Local PostgreSQL service
+├── fly.toml         # Backend deployment configuration
 ├── Makefile         # Short, repeatable development commands
 └── README.md
 ```
 
 See [the architecture](docs/ARCHITECTURE.md) for system boundaries and [the roadmap](docs/ROADMAP.md) for the incremental build plan.
 See [the security policy](docs/SECURITY.md) before deploying or using real career
-documents.
+documents, and [the deployment runbook](docs/DEPLOYMENT.md) to put CareerOS
+online.
 
 ## Current milestone
 
-Checkpoint 4 document ingestion and grounded chat are complete. Checkpoint 5 resume review is complete: users can select an indexed document, optionally target a role, generate a validated structured Claude review, browse saved history, and inspect evidence-backed strengths, gaps, and rewrite suggestions.
+Checkpoints 1 through 6 are complete: goals and accomplishments, persistent
+Claude chat, document ingestion with grounded retrieval, resume review, and mock
+interviews.
 
-Checkpoint 6 mock interviews are complete: users configure a target role, interview type, difficulty, and question count, then answer Claude's questions one at a time. Each answer is scored out of five with specific feedback, and finishing the session produces a structured debrief of strengths, improvements, and what to learn next.
-
-Checkpoint 7 is in progress. The current security baseline includes hardened
-document validation and extraction limits, narrowed CORS, security response
-headers, and an explicit public-release checklist. End-user authentication and
-per-user data isolation remain public-release blockers.
+Checkpoint 7 is functionally complete. Google authentication with an optional
+allowlist, per-user isolation across every resource, per-user rate limits,
+document deletion, fail-closed production settings, structured logging, pgvector
+document search, object storage for uploads, a production container image, CI,
+and a deployment runbook are all in place. What remains is running the deployment
+itself, then accessibility and responsive polish.

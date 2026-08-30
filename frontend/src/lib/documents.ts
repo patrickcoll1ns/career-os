@@ -51,3 +51,15 @@ export async function uploadDocument(file: File): Promise<CareerDocument> {
 
   return response.json();
 }
+
+export class DocumentDeleteError extends Error {}
+
+export async function deleteDocument(documentId: string): Promise<void> {
+  const response = await backendFetch(`/documents/${encodeURIComponent(documentId)}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new DocumentDeleteError("FastAPI could not remove the document.");
+  }
+}

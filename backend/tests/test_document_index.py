@@ -1,144 +1,141 @@
 import uuid
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
+
+import pytest
 
 from app.integrations.document_chunker import DocumentChunk
 from app.integrations.document_index import DocumentVectorIndex
+from app.models.document_chunk import DocumentChunkRecord
+
+OWNER_ID = "google:123"
 
 
-def build_index(client: Mock) -> DocumentVectorIndex:
+def build_index(
+    session: AsyncMock, embedder: Mock | None = None
+) -> DocumentVectorIndex:
     index = DocumentVectorIndex.__new__(DocumentVectorIndex)
-    index.client = client
-    index.owner_id = "google:123"
-    index.collection_name = "career_documents"
-    index.max_distance = 1.6
+    index.session = session
+    index.embedder = embedder or Mock()
+    index.owner_id = OWNER_ID
+    index.max_distance = 0.6
     return index
 
 
-def test_index_replaces_document_chunks_with_stable_ids_and_metadata() -> None:
-    collection = Mock()
-    client = Mock()
-    client.get_or_create_collection.return_value = collection
-    index = build_index(client)
+def build_embedder(vectors: list[list[float]]) -> Mock:
+    embedder = Mock()
+    embedder.is_configured = True
+    embedder.embed_documents = AsyncMock(return_value=vectors)
+    embedder.embed_query = AsyncMock(return_value=vectors[0] if vectors else [0.0])
+    return embedder
+
+
+async def test_index_replaces_chunks_with_owner_scoped_rows() -> None:
+    session = AsyncMock()
+    session.add_all = Mock()
+    embedder = build_embedder([[0.1, 0.2], [0.3, 0.4]])
+    index = build_index(session, embedder)
     document_id = uuid.uuid4()
     chunks = [
         DocumentChunk(index=0, text="Python and FastAPI"),
         DocumentChunk(index=1, text="FastAPI and PostgreSQL"),
     ]
 
-    index.index(document_id, "resume.pdf", chunks)
+    await index.index(document_id, "resume.pdf", chunks)
 
-    client.get_or_create_collection.assert_called_once_with("career_documents")
-    collection.delete.assert_called_once_with(
-        where={
-            "$and": [
-                {"document_id": str(document_id)},
-                {"owner_id": "google:123"},
-            ]
-        }
+    # Existing rows are cleared before new ones are written.
+    session.execute.assert_awaited_once()
+    embedder.embed_documents.assert_awaited_once_with(
+        ["Python and FastAPI", "FastAPI and PostgreSQL"]
     )
-    collection.add.assert_called_once_with(
-        ids=[f"{document_id}:0", f"{document_id}:1"],
-        documents=["Python and FastAPI", "FastAPI and PostgreSQL"],
-        metadatas=[
-            {
-                "document_id": str(document_id),
-                "owner_id": "google:123",
-                "filename": "resume.pdf",
-                "chunk_index": 0,
-            },
-            {
-                "document_id": str(document_id),
-                "owner_id": "google:123",
-                "filename": "resume.pdf",
-                "chunk_index": 1,
-            },
-        ],
+    added = session.add_all.call_args.args[0]
+    assert [record.chunk_index for record in added] == [0, 1]
+    assert {record.owner_id for record in added} == {OWNER_ID}
+    assert {record.document_id for record in added} == {document_id}
+    assert [record.embedding for record in added] == [[0.1, 0.2], [0.3, 0.4]]
+    session.commit.assert_awaited()
+
+
+async def test_index_only_deletes_when_a_document_has_no_chunks() -> None:
+    session = AsyncMock()
+    session.add_all = Mock()
+    embedder = build_embedder([])
+    index = build_index(session, embedder)
+
+    await index.index(uuid.uuid4(), "empty.txt", [])
+
+    session.execute.assert_awaited_once()
+    session.add_all.assert_not_called()
+    embedder.embed_documents.assert_not_awaited()
+    session.commit.assert_awaited_once()
+
+
+async def test_search_returns_typed_chunks_with_source_metadata() -> None:
+    document_id = uuid.uuid4()
+    record = DocumentChunkRecord(
+        owner_id=OWNER_ID,
+        document_id=document_id,
+        chunk_index=3,
+        filename="resume.pdf",
+        text="Built production APIs with FastAPI",
+        embedding=[0.1],
     )
+    session = AsyncMock()
+    session.execute.return_value = Mock(all=Mock(return_value=[(record, 0.21)]))
+    index = build_index(session, build_embedder([[0.1]]))
 
+    chunks = await index.search("backend experience", limit=4)
 
-def test_index_deletes_stale_records_when_document_has_no_chunks() -> None:
-    collection = Mock()
-    client = Mock()
-    client.get_or_create_collection.return_value = collection
-    index = build_index(client)
-
-    index.index(uuid.uuid4(), "empty.txt", [])
-
-    collection.delete.assert_called_once()
-    collection.add.assert_not_called()
-
-
-def test_search_returns_typed_chunks_with_source_metadata() -> None:
-    collection = Mock()
-    collection.query.return_value = {
-        "documents": [["Built production APIs with FastAPI"]],
-        "metadatas": [
-            [
-                {
-                    "document_id": "document-1",
-                    "filename": "resume.pdf",
-                    "chunk_index": 3,
-                }
-            ]
-        ],
-        "distances": [[0.72]],
-    }
-    client = Mock()
-    client.get_or_create_collection.return_value = collection
-    index = build_index(client)
-
-    chunks = index.search("backend experience", limit=4)
-
-    collection.query.assert_called_once_with(
-        query_texts=["backend experience"],
-        n_results=4,
-        where={"owner_id": "google:123"},
-        include=["documents", "metadatas", "distances"],
-    )
     assert len(chunks) == 1
-    assert chunks[0].document_id == "document-1"
+    assert chunks[0].document_id == str(document_id)
     assert chunks[0].filename == "resume.pdf"
     assert chunks[0].chunk_index == 3
     assert chunks[0].text == "Built production APIs with FastAPI"
-    assert chunks[0].distance == 0.72
+    assert chunks[0].distance == pytest.approx(0.21)
 
 
-def test_search_returns_empty_list_for_an_empty_collection() -> None:
-    collection = Mock()
-    collection.query.return_value = {
-        "documents": [[]],
-        "metadatas": [[]],
-        "distances": [[]],
-    }
-    client = Mock()
-    client.get_or_create_collection.return_value = collection
+async def test_search_returns_an_empty_list_when_nothing_is_indexed() -> None:
+    session = AsyncMock()
+    session.execute.return_value = Mock(all=Mock(return_value=[]))
 
-    assert build_index(client).search("anything") == []
+    assert await build_index(session, build_embedder([[0.1]])).search("anything") == []
 
 
-def test_search_filters_chunks_above_the_relevance_distance() -> None:
-    collection = Mock()
-    collection.query.return_value = {
-        "documents": [["Relevant resume text", "Unrelated resume text"]],
-        "metadatas": [
-            [
-                {
-                    "document_id": "document-1",
-                    "filename": "resume.pdf",
-                    "chunk_index": 0,
-                },
-                {
-                    "document_id": "document-1",
-                    "filename": "resume.pdf",
-                    "chunk_index": 1,
-                },
-            ]
-        ],
-        "distances": [[1.2, 1.7]],
-    }
-    client = Mock()
-    client.get_or_create_collection.return_value = collection
+async def test_search_is_skipped_when_no_embedding_key_is_configured() -> None:
+    session = AsyncMock()
+    embedder = Mock()
+    embedder.is_configured = False
+    embedder.embed_query = AsyncMock()
 
-    chunks = build_index(client).search("backend experience")
+    assert await build_index(session, embedder).search("anything") == []
 
-    assert [chunk.text for chunk in chunks] == ["Relevant resume text"]
+    session.execute.assert_not_awaited()
+    embedder.embed_query.assert_not_awaited()
+
+
+async def test_delete_document_clears_only_that_document() -> None:
+    session = AsyncMock()
+    index = build_index(session, build_embedder([[0.1]]))
+
+    await index.delete_document(uuid.uuid4())
+
+    session.execute.assert_awaited_once()
+    session.commit.assert_awaited_once()
+
+
+async def test_indexing_is_skipped_when_no_embedding_key_is_configured() -> None:
+    """A missing Voyage key must not fail the upload.
+
+    The document stays usable for resume review; only copilot retrieval is off.
+    """
+    session = AsyncMock()
+    session.add_all = Mock()
+    embedder = Mock()
+    embedder.is_configured = False
+    embedder.embed_documents = AsyncMock()
+    index = build_index(session, embedder)
+
+    await index.index(uuid.uuid4(), "resume.pdf", [DocumentChunk(index=0, text="Hi")])
+
+    embedder.embed_documents.assert_not_awaited()
+    session.add_all.assert_not_called()
+    session.commit.assert_awaited_once()

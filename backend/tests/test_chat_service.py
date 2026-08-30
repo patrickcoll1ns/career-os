@@ -205,9 +205,11 @@ def test_relevant_document_chunks_are_escaped_and_added_to_prompt() -> None:
     ]
 
 
-def test_chat_continues_without_document_context_when_chroma_fails() -> None:
+def test_chat_continues_without_document_context_when_retrieval_fails() -> None:
     service, conversation_repository, anthropic_client = make_service()
-    service.document_index.search.side_effect = RuntimeError("Chroma unavailable")
+    service.document_index.search.side_effect = RuntimeError(
+        "Embedding service unavailable"
+    )
     conversation_id = uuid.uuid4()
     conversation_repository.get.return_value = Conversation(id=conversation_id)
     conversation_repository.list_messages.return_value = []

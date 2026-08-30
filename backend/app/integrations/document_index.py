@@ -1,10 +1,17 @@
+import logging
 import uuid
 from dataclasses import dataclass
 
-import chromadb
+from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_owner_id
+from app.core.config import settings
 from app.integrations.document_chunker import DocumentChunk
+from app.integrations.embeddings import VoyageEmbedder
+from app.models.document_chunk import DocumentChunkRecord
+
+logger = logging.getLogger("careeros.document_index")
 
 
 @dataclass(frozen=True)
@@ -17,97 +24,97 @@ class RetrievedDocumentChunk:
 
 
 class DocumentVectorIndex:
-    """Store rebuildable document chunks in a Chroma collection."""
+    """Store and search document chunk embeddings inside PostgreSQL.
+
+    Keeping vectors in the authoritative database means retrieval is covered by
+    the same ownership filter, transaction, and backup as everything else, and
+    removes a second stateful service from the deployment.
+    """
 
     def __init__(
         self,
-        host: str,
-        port: int,
-        collection_name: str = "career_documents",
-        max_distance: float = 1.6,
+        session: AsyncSession,
+        embedder: VoyageEmbedder | None = None,
+        max_distance: float | None = None,
     ) -> None:
-        self.host = host
-        self.port = port
-        self._client: chromadb.ClientAPI | None = None
+        self.session = session
+        self.embedder = embedder or VoyageEmbedder()
+        self.max_distance = (
+            settings.retrieval_max_distance if max_distance is None else max_distance
+        )
         self.owner_id = get_current_owner_id()
-        self.collection_name = collection_name
-        self.max_distance = max_distance
 
-    @property
-    def client(self) -> chromadb.ClientAPI:
-        """Connect only when an index operation is actually requested.
-
-        FastAPI resolves dependencies before validating a request body. Keeping the
-        Chroma connection lazy means invalid requests can be rejected locally and
-        availability checks do not become an accidental denial-of-service vector.
-        """
-        if self._client is None:
-            self._client = chromadb.HttpClient(host=self.host, port=self.port)
-        return self._client
-
-    @client.setter
-    def client(self, value: chromadb.ClientAPI) -> None:
-        self._client = value
-
-    def index(
+    async def index(
         self,
         document_id: uuid.UUID,
         filename: str,
         chunks: list[DocumentChunk],
     ) -> None:
-        collection = self.client.get_or_create_collection(self.collection_name)
-        document_id_text = str(document_id)
-        collection.delete(
-            where={
-                "$and": [
-                    {"document_id": document_id_text},
-                    {"owner_id": self.owner_id},
-                ]
-            }
-        )
-
-        if not chunks:
+        """Replace every stored chunk for one document."""
+        await self._delete_chunks(document_id)
+        if not chunks or not self.embedder.is_configured:
+            if chunks:
+                # A document without embeddings is still readable and reviewable;
+                # only copilot retrieval is unavailable. Failing the upload here
+                # would take resume review down with it.
+                logger.warning(
+                    "Skipping document indexing because no embedding key is set",
+                    extra={"document_id": str(document_id)},
+                )
+            await self.session.commit()
             return
 
-        collection.add(
-            ids=[f"{document_id_text}:{chunk.index}" for chunk in chunks],
-            documents=[chunk.text for chunk in chunks],
-            metadatas=[
-                {
-                    "document_id": document_id_text,
-                    "owner_id": self.owner_id,
-                    "filename": filename,
-                    "chunk_index": chunk.index,
-                }
-                for chunk in chunks
-            ],
+        vectors = await self.embedder.embed_documents([chunk.text for chunk in chunks])
+        self.session.add_all(
+            [
+                DocumentChunkRecord(
+                    owner_id=self.owner_id,
+                    document_id=document_id,
+                    chunk_index=chunk.index,
+                    filename=filename,
+                    text=chunk.text,
+                    embedding=vector,
+                )
+                for chunk, vector in zip(chunks, vectors, strict=True)
+            ]
         )
+        await self.session.commit()
 
-    def search(self, query: str, limit: int = 5) -> list[RetrievedDocumentChunk]:
-        collection = self.client.get_or_create_collection(self.collection_name)
-        result = collection.query(
-            query_texts=[query],
-            n_results=limit,
-            where={"owner_id": self.owner_id},
-            include=["documents", "metadatas", "distances"],
+    async def delete_document(self, document_id: uuid.UUID) -> None:
+        await self._delete_chunks(document_id)
+        await self.session.commit()
+
+    async def search(self, query: str, limit: int = 5) -> list[RetrievedDocumentChunk]:
+        if not self.embedder.is_configured:
+            return []
+
+        query_vector = await self.embedder.embed_query(query)
+        distance = DocumentChunkRecord.embedding.cosine_distance(query_vector)
+        result = await self.session.execute(
+            select(DocumentChunkRecord, distance.label("distance"))
+            .where(
+                DocumentChunkRecord.owner_id == self.owner_id,
+                distance <= self.max_distance,
+            )
+            .order_by(distance)
+            .limit(limit)
         )
-        documents = (result.get("documents") or [[]])[0]
-        metadatas = (result.get("metadatas") or [[]])[0]
-        distances = (result.get("distances") or [[]])[0]
 
         return [
             RetrievedDocumentChunk(
-                document_id=str(metadata["document_id"]),
-                filename=str(metadata["filename"]),
-                chunk_index=int(metadata["chunk_index"]),
-                text=document,
-                distance=float(distance),
+                document_id=str(record.document_id),
+                filename=record.filename,
+                chunk_index=record.chunk_index,
+                text=record.text,
+                distance=float(chunk_distance),
             )
-            for document, metadata, distance in zip(
-                documents,
-                metadatas,
-                distances,
-                strict=True,
-            )
-            if distance <= self.max_distance
+            for record, chunk_distance in result.all()
         ]
+
+    async def _delete_chunks(self, document_id: uuid.UUID) -> None:
+        await self.session.execute(
+            delete(DocumentChunkRecord).where(
+                DocumentChunkRecord.owner_id == self.owner_id,
+                DocumentChunkRecord.document_id == document_id,
+            )
+        )

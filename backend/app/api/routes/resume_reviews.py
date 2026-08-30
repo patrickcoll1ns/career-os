@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.rate_limit import rate_limit
 from app.db.session import get_database_session
 from app.integrations.resume_reviewer import (
     AnthropicResumeReviewer,
@@ -36,7 +37,12 @@ ResumeReviewServiceDependency = Annotated[
 ]
 
 
-@router.post("", response_model=ResumeReviewRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=ResumeReviewRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("ai", "rate_limit_ai_requests"))],
+)
 async def create_resume_review(
     review_data: ResumeReviewCreate,
     service: ResumeReviewServiceDependency,

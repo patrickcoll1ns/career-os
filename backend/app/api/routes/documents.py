@@ -1,9 +1,19 @@
+import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Response,
+    UploadFile,
+    status,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.rate_limit import rate_limit
 from app.db.session import get_database_session
 from app.integrations.document_chunker import DocumentChunker
 from app.integrations.document_extractor import DocumentTextExtractor
@@ -11,7 +21,7 @@ from app.integrations.document_index import DocumentVectorIndex
 from app.integrations.document_storage import (
     DocumentTooLargeError,
     InvalidDocumentError,
-    LocalDocumentStorage,
+    build_document_storage,
 )
 from app.repositories.documents import DocumentRepository
 from app.schemas.document import DocumentRead
@@ -24,25 +34,22 @@ DatabaseSession = Annotated[AsyncSession, Depends(get_database_session)]
 def get_document_service(session: DatabaseSession) -> DocumentService:
     return DocumentService(
         DocumentRepository(session),
-        LocalDocumentStorage(
-            settings.document_upload_directory,
-            settings.max_document_size_bytes,
-        ),
+        build_document_storage(settings),
         DocumentTextExtractor(),
         DocumentChunker(),
-        DocumentVectorIndex(
-            settings.chroma_host,
-            settings.chroma_port,
-            settings.chroma_collection,
-            settings.chroma_max_distance,
-        ),
+        DocumentVectorIndex(session),
     )
 
 
 DocumentServiceDependency = Annotated[DocumentService, Depends(get_document_service)]
 
 
-@router.post("", response_model=DocumentRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=DocumentRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("documents", "rate_limit_upload_requests"))],
+)
 async def upload_document(
     service: DocumentServiceDependency,
     file: Annotated[UploadFile, File(description="PDF, DOCX, or TXT; maximum 5 MB")],
@@ -68,3 +75,16 @@ async def list_documents(
 ) -> list[DocumentRead]:
     documents = await service.list_all()
     return [DocumentRead.model_validate(document) for document in documents]
+
+
+@router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_document(
+    document_id: uuid.UUID,
+    service: DocumentServiceDependency,
+) -> Response:
+    if not await service.delete(document_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

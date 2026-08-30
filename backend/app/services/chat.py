@@ -1,8 +1,7 @@
+import logging
 import uuid
 from datetime import UTC, datetime, timedelta
 from xml.sax.saxutils import escape
-
-import anyio
 
 from app.integrations.anthropic_client import AnthropicClient
 from app.integrations.document_index import (
@@ -14,6 +13,8 @@ from app.models.message import Message
 from app.repositories.accomplishments import AccomplishmentRepository
 from app.repositories.chat import ConversationRepository
 from app.repositories.goals import GoalRepository
+
+logger = logging.getLogger("careeros.chat")
 
 MAX_CONTEXT_MESSAGES = 20
 MAX_CONVERSATION_TITLE_LENGTH = 80
@@ -138,12 +139,13 @@ class ChatService:
         self, query: str
     ) -> list[RetrievedDocumentChunk]:
         try:
-            return await anyio.to_thread.run_sync(
-                self.document_index.search,
-                query,
-                MAX_RETRIEVED_DOCUMENT_CHUNKS,
+            return await self.document_index.search(
+                query, MAX_RETRIEVED_DOCUMENT_CHUNKS
             )
         except Exception:
+            # Retrieval is an enhancement: a copilot answer grounded only in the
+            # career profile is better than no answer at all.
+            logger.warning("Document retrieval failed", exc_info=True)
             return []
 
     async def _build_system_prompt(

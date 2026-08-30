@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      // Uploads are accepted up to 5 MB and reach the server as a Server Action
+      // body. The default 1 MB cap would reject most real resumes; the extra
+      // megabyte covers multipart boundary and header overhead.
+      bodySizeLimit: "6mb",
+    },
+  },
   async headers() {
     return [
       {

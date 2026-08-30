@@ -1,8 +1,9 @@
 PYTHON ?= python3
 VENV := backend/.venv
 VENV_BIN := $(VENV)/bin
+OWNER ?=
 
-.PHONY: setup configure database database-stop database-status migrate backend frontend backend-check frontend-check security-check check
+.PHONY: setup configure database database-stop database-status migrate reindex claim-owner backend frontend backend-check frontend-check security-check check
 
 setup:
 	$(PYTHON) -m venv $(VENV)
@@ -15,7 +16,7 @@ configure:
 	$(PYTHON) scripts/configure.py
 
 database:
-	docker compose up -d --wait postgres chroma
+	docker compose up -d --wait postgres
 	cd backend && .venv/bin/alembic upgrade head
 
 database-stop:
@@ -26,6 +27,15 @@ database-status:
 
 migrate:
 	cd backend && .venv/bin/alembic upgrade head
+
+# Rebuild document embeddings from stored extracted text.
+reindex:
+	cd backend && .venv/bin/python -m app.cli reindex
+
+# Move pre-authentication records to a real account: make claim-owner OWNER=google:123
+claim-owner:
+	@test -n "$(OWNER)" || (echo "Set OWNER, for example: make claim-owner OWNER=google:123" && exit 1)
+	cd backend && .venv/bin/python -m app.cli claim-owner --owner "$(OWNER)"
 
 backend:
 	cd backend && .venv/bin/uvicorn app.main:app --reload
@@ -44,5 +54,9 @@ frontend-check:
 
 security-check:
 	npm --prefix frontend audit --omit=dev --audit-level=low
+	# The local careeros-api package is not on PyPI, so it is skipped. --strict is
+	# omitted because it would turn that expected skip into a failure; pip-audit
+	# still exits non-zero when a real advisory is found.
+	cd backend && .venv/bin/pip-audit --skip-editable --progress-spinner off
 
 check: backend-check frontend-check

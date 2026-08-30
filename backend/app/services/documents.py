@@ -1,3 +1,6 @@
+import logging
+import uuid
+
 import anyio
 from fastapi import UploadFile
 
@@ -7,9 +10,11 @@ from app.integrations.document_extractor import (
     DocumentTextExtractor,
 )
 from app.integrations.document_index import DocumentVectorIndex
-from app.integrations.document_storage import LocalDocumentStorage
+from app.integrations.document_storage import DocumentNotStoredError, DocumentStorage
 from app.models.document import Document
 from app.repositories.documents import DocumentRepository
+
+logger = logging.getLogger("careeros.documents")
 
 
 class DocumentService:
@@ -18,7 +23,7 @@ class DocumentService:
     def __init__(
         self,
         repository: DocumentRepository,
-        storage: LocalDocumentStorage,
+        storage: DocumentStorage,
         extractor: DocumentTextExtractor,
         chunker: DocumentChunker,
         vector_index: DocumentVectorIndex,
@@ -43,19 +48,20 @@ class DocumentService:
         try:
             document = await self.repository.add(document)
         except Exception:
-            self.storage.delete(stored.storage_key)
+            await self.storage.delete(stored.storage_key)
             raise
 
         document.status = "processing"
         document = await self.repository.update(document)
 
         try:
+            data = await self.storage.read(document.storage_key)
             extracted_text = await anyio.to_thread.run_sync(
                 self.extractor.extract,
-                self.storage.path_for(document.storage_key),
+                data,
                 document.content_type,
             )
-        except DocumentExtractionError as error:
+        except (DocumentExtractionError, DocumentNotStoredError) as error:
             document.status = "failed"
             document.error_message = str(error)
             return await self.repository.update(document)
@@ -65,13 +71,15 @@ class DocumentService:
         chunks = self.chunker.split(extracted_text)
 
         try:
-            await anyio.to_thread.run_sync(
-                self.vector_index.index,
+            await self.vector_index.index(
                 document.id,
                 document.original_filename,
                 chunks,
             )
         except Exception:
+            logger.exception(
+                "Document indexing failed", extra={"document_id": str(document.id)}
+            )
             document.status = "failed"
             document.error_message = "Document vector indexing failed."
             return await self.repository.update(document)
@@ -81,3 +89,23 @@ class DocumentService:
 
     async def list_all(self) -> list[Document]:
         return await self.repository.list_all()
+
+    async def delete(self, document_id: uuid.UUID) -> bool:
+        """Remove a document, its embeddings, its reviews, and its stored bytes."""
+        document = await self.repository.get(document_id)
+        if document is None:
+            return False
+
+        storage_key = document.storage_key
+        # Deleting the row cascades to document_chunks and resume_reviews, so the
+        # database is consistent even if object storage is briefly unreachable.
+        await self.repository.delete(document)
+
+        try:
+            await self.storage.delete(storage_key)
+        except Exception:
+            logger.exception(
+                "Stored document bytes could not be deleted",
+                extra={"document_id": str(document_id)},
+            )
+        return True

@@ -2,7 +2,7 @@ from xml.sax.saxutils import escape
 
 import anthropic
 
-from app.core.config import settings
+from app.core.config import reveal, settings
 from app.schemas.resume_review import ResumeReviewResult
 
 MAX_RESUME_CHARACTERS = 60_000
@@ -45,7 +45,7 @@ class AnthropicResumeReviewer:
 
         try:
             async with anthropic.AsyncAnthropic(
-                api_key=settings.anthropic_api_key
+                api_key=reveal(settings.anthropic_api_key)
             ) as client:
                 response = await client.messages.parse(
                     model=settings.anthropic_model,

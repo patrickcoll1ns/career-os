@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
+from app.core.rate_limit import rate_limit
 from app.db.session import get_database_session
 from app.integrations.anthropic_client import AnthropicClient, AnthropicReplyError
 from app.integrations.document_index import DocumentVectorIndex
@@ -31,12 +31,7 @@ def get_chat_service(session: DatabaseSession) -> ChatService:
         GoalRepository(session),
         AccomplishmentRepository(session),
         AnthropicClient(),
-        DocumentVectorIndex(
-            settings.chroma_host,
-            settings.chroma_port,
-            settings.chroma_collection,
-            settings.chroma_max_distance,
-        ),
+        DocumentVectorIndex(session),
     )
 
 
@@ -91,6 +86,7 @@ async def get_conversation(
 @router.post(
     "/conversations/{conversation_id}/messages",
     response_model=ConversationWithMessages,
+    dependencies=[Depends(rate_limit("ai", "rate_limit_ai_requests"))],
 )
 async def send_message(
     conversation_id: uuid.UUID,
