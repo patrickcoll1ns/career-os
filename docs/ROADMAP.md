@@ -3,7 +3,7 @@
 ## Checkpoint 0 — Architecture foundation
 
 - Define product scope and system boundaries.
-- Document PostgreSQL and ChromaDB ownership.
+- Document PostgreSQL and vector-store ownership.
 - Define secret-handling and retrieval safety rules.
 - Record the incremental implementation plan.
 
@@ -11,7 +11,7 @@
 
 - Scaffold Next.js with TypeScript, Tailwind CSS, ESLint, and App Router.
 - Scaffold FastAPI with settings, CORS, tests, and `/health`.
-- Configure PostgreSQL and ChromaDB with Docker Compose.
+- Configure PostgreSQL with Docker Compose.
 - Document local startup commands.
 
 Done when the browser renders a basic CareerOS shell, the API health test passes, and the frontend can reach the API.
@@ -59,12 +59,19 @@ per-answer scoring, and completed with a structured debrief.
 
 ## Checkpoint 7 — Portfolio release
 
-- Add authentication and user isolation. (Implemented; deployment verification pending.)
+- Add authentication and user isolation. (Done.)
+- Make the deployment safe by default and documented. (Done.)
 - Improve accessibility and responsive design.
-- Add demo data, screenshots, tests, and deployment documentation.
-- Deploy the frontend, API, PostgreSQL, and vector storage.
+- Add demo data and screenshots.
+- Deploy the frontend, API, PostgreSQL, and object storage.
 
-In progress: Google authentication, signed backend identity, per-user database and
-vector isolation, upload/extraction hardening, security headers, and narrowed CORS
-are implemented. Deployment verification, accessibility, release assets, and
-operational controls remain.
+Done: Google authentication with an optional allowlist, body-bound signed backend
+identity, per-user database and embedding isolation with cross-user tests,
+per-user rate limits, document deletion, upload/extraction hardening, security
+headers, narrowed CORS, fail-closed production settings, structured logging,
+pgvector in place of a second stateful service, object storage for uploads, a
+production container image, Fly and Vercel configuration, CI, and a deployment
+runbook.
+
+Remaining: run the deployment, then accessibility, responsive polish, and release
+assets.

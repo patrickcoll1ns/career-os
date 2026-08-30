@@ -2,7 +2,7 @@ from xml.sax.saxutils import escape
 
 import anthropic
 
-from app.core.config import settings
+from app.core.config import reveal, settings
 from app.schemas.interview import QuestionResult, SessionSummary, TurnFeedback
 
 MAX_ANSWER_CHARACTERS = 8_000
@@ -118,7 +118,7 @@ class AnthropicInterviewer:
     ) -> T:
         try:
             async with anthropic.AsyncAnthropic(
-                api_key=settings.anthropic_api_key
+                api_key=reveal(settings.anthropic_api_key)
             ) as client:
                 response = await client.messages.parse(
                     model=settings.anthropic_model,

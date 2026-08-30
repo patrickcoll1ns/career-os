@@ -1,4 +1,5 @@
-from pathlib import Path
+import io
+import zipfile
 
 from docx import Document as DocxDocument
 from docx.table import Table
@@ -18,17 +19,22 @@ class DocumentExtractionError(ValueError):
 class DocumentTextExtractor:
     """Extract plain text from the document formats accepted by CareerOS."""
 
-    def extract(self, path: Path, content_type: str) -> str:
+    def extract(self, data: bytes, content_type: str) -> str:
+        """Read text from document bytes.
+
+        Bytes rather than a path, because a deployed CareerOS keeps documents in
+        object storage and never has them on a local filesystem.
+        """
         try:
             if content_type == "application/pdf":
-                text = self._extract_pdf(path)
+                text = self._extract_pdf(data)
             elif content_type == (
                 "application/vnd.openxmlformats-officedocument."
                 "wordprocessingml.document"
             ):
-                text = self._extract_docx(path)
+                text = self._extract_docx(data)
             elif content_type == "text/plain":
-                text = path.read_text(encoding="utf-8-sig")
+                text = data.decode("utf-8-sig")
             else:
                 raise DocumentExtractionError("This document type is not supported.")
         except DocumentExtractionError:
@@ -50,8 +56,8 @@ class DocumentTextExtractor:
         return normalized_text
 
     @staticmethod
-    def _extract_pdf(path: Path) -> str:
-        reader = PdfReader(path)
+    def _extract_pdf(data: bytes) -> str:
+        reader = PdfReader(io.BytesIO(data))
         if len(reader.pages) > MAX_DOCUMENT_PAGES:
             raise DocumentExtractionError(
                 f"PDFs may contain at most {MAX_DOCUMENT_PAGES} pages."
@@ -59,10 +65,8 @@ class DocumentTextExtractor:
         return "\n\n".join(page.extract_text() or "" for page in reader.pages)
 
     @staticmethod
-    def _extract_docx(path: Path) -> str:
-        import zipfile
-
-        with zipfile.ZipFile(path) as archive:
+    def _extract_docx(data: bytes) -> str:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
             members = archive.infolist()
             if (
                 len(members) > MAX_DOCX_MEMBERS
@@ -72,7 +76,7 @@ class DocumentTextExtractor:
                 raise DocumentExtractionError(
                     "The DOCX expands beyond the safe processing limit."
                 )
-        document = DocxDocument(path)
+        document = DocxDocument(io.BytesIO(data))
         blocks: list[str] = []
 
         for block in document.iter_inner_content():

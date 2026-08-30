@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 
-import { DocumentUploadError, uploadDocument } from "@/lib/documents";
+import {
+  DocumentUploadError,
+  deleteDocument,
+  uploadDocument,
+} from "@/lib/documents";
 
 export type DocumentUploadState = {
   status: "idle" | "success" | "error";
@@ -51,7 +55,38 @@ export async function uploadDocumentAction(
       message:
         error instanceof DocumentUploadError
           ? error.message
-          : "Could not upload the document. Make sure FastAPI and ChromaDB are running.",
+          : "Could not upload the document. Make sure FastAPI and PostgreSQL are running.",
     };
   }
+}
+
+export type DocumentDeleteState = {
+  status: "idle" | "success" | "error";
+  message: string;
+};
+
+/**
+ * The action receives only the document ID. FastAPI re-checks that the ID
+ * belongs to the signed-in owner, so a forged ID cannot reach another account's
+ * document.
+ */
+export async function deleteDocumentAction(
+  _previousState: DocumentDeleteState,
+  formData: FormData,
+): Promise<DocumentDeleteState> {
+  const documentId = formData.get("documentId");
+
+  if (typeof documentId !== "string" || !documentId) {
+    return { status: "error", message: "Select a document to remove." };
+  }
+
+  try {
+    await deleteDocument(documentId);
+  } catch {
+    return { status: "error", message: "Could not remove the document." };
+  }
+
+  revalidatePath("/documents");
+  revalidatePath("/resume-reviews");
+  return { status: "success", message: "" };
 }

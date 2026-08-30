@@ -18,6 +18,8 @@ type ConfirmDeleteControlProps = {
   id: string;
   /** What is being deleted, e.g. "goal" — used in the confirmation copy. */
   label: string;
+  /** Overrides the confirmation sentence when archiving is not an option. */
+  confirmMessage?: string;
 };
 
 const initialState: DeleteFormState = { status: "idle", message: "" };
@@ -31,6 +33,7 @@ export function ConfirmDeleteControl({
   idField,
   id,
   label,
+  confirmMessage,
 }: ConfirmDeleteControlProps) {
   const [isConfirming, setIsConfirming] = useState(false);
   const [state, formAction, pending] = useActionState(action, initialState);
@@ -58,8 +61,8 @@ export function ConfirmDeleteControl({
     <form action={formAction} className="mt-2">
       <input type="hidden" name={idField} value={id} />
       <p className="text-xs leading-5 text-[#805744]">
-        Delete this {label} permanently? This cannot be undone — archive it
-        instead to keep it recoverable.
+        {confirmMessage ??
+          `Delete this ${label} permanently? This cannot be undone — archive it instead to keep it recoverable.`}
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-3">
         <button

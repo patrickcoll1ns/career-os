@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.rate_limit import rate_limit
 from app.db.session import get_database_session
 from app.integrations.interviewer import AnthropicInterviewer, InterviewGenerationError
 from app.models.interview import InterviewSession, InterviewTurn
@@ -49,6 +50,7 @@ def _to_session_with_turns(
     "",
     response_model=InterviewSessionWithTurns,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("ai", "rate_limit_ai_requests"))],
 )
 async def create_interview_session(
     session_data: InterviewSessionCreate,
@@ -94,6 +96,7 @@ async def get_interview_session(
 @router.post(
     "/{session_id}/answers",
     response_model=InterviewSessionWithTurns,
+    dependencies=[Depends(rate_limit("ai", "rate_limit_ai_requests"))],
 )
 async def submit_interview_answer(
     session_id: uuid.UUID,

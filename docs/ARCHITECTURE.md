@@ -6,9 +6,10 @@ CareerOS is a monorepo containing a Next.js frontend and a FastAPI backend. The 
 
 ```text
 Browser -> Next.js -> FastAPI
-                         |-> PostgreSQL
-                         |-> ChromaDB
-                         `-> Anthropic API
+                         |-> PostgreSQL (records and pgvector embeddings)
+                         |-> Object storage (uploaded documents)
+                         |-> Anthropic API (coaching, review, interviews)
+                         `-> Voyage AI (embeddings)
 ```
 
 ## Service responsibilities
@@ -30,15 +31,29 @@ Browser -> Next.js -> FastAPI
 - Conversation and structured-data persistence
 - Document extraction and chunking
 - Embedding, retrieval, and prompt construction
-- Authorization boundaries when authentication is added
+- Identity verification and per-owner authorization boundaries
 
 ### PostgreSQL
 
 PostgreSQL is the authoritative data store for profiles, conversations, messages, goals, accomplishments, document metadata, resume reviews, and interview sessions.
 
-### ChromaDB
+### Vector search
 
-ChromaDB will store derived embeddings for searchable document chunks and selected conversation memories. Each vector record will reference its source PostgreSQL record. ChromaDB data must be rebuildable from authoritative records and uploaded source files.
+Document chunk embeddings live in the same PostgreSQL database, in a
+`document_chunks` table using the `pgvector` extension. Keeping them there means
+retrieval is covered by the same ownership filter, transaction, and backup as
+everything else, and the deployment has one stateful service instead of two.
+
+Embedding rows are derived data. They reference their source document, cascade
+when it is deleted, and can be rebuilt at any time from stored extracted text
+with `make reindex`.
+
+### Object storage
+
+Uploaded documents are written to an S3-compatible bucket in deployments and to
+`data/uploads` in local development, behind one `DocumentStorage` interface that
+performs validation identically for both. Container filesystems do not survive a
+restart, so nothing durable may live on local disk in production.
 
 ## Backend organization
 
@@ -50,7 +65,7 @@ routes -> services -> repositories and integrations
 
 - Routes translate HTTP requests and responses.
 - Services implement use cases.
-- Repositories isolate PostgreSQL and ChromaDB operations.
+- Repositories isolate PostgreSQL operations.
 - Integrations isolate Anthropic and document-processing libraries.
 
 This prevents API routes from becoming tightly coupled to a particular database or model SDK.
@@ -58,7 +73,7 @@ This prevents API routes from becoming tightly coupled to a particular database 
 ## AI response flow
 
 1. Validate the user's message and load recent conversation history from PostgreSQL.
-2. When RAG is enabled, search relevant document chunks and selected memories in ChromaDB.
+2. Embed the question and search the owner's document chunks by cosine distance.
 3. Build a prompt from system instructions, structured profile data, recent messages, and retrieved evidence.
 4. Ask Claude to generate a response grounded in that context.
 5. Save the user message and successful assistant response together as one PostgreSQL transaction.
@@ -82,7 +97,7 @@ Saving the complete exchange atomically prevents a failed external API call from
 - Never expose the Anthropic key through a `NEXT_PUBLIC_` variable.
 - Restrict uploaded file types and sizes.
 - Do not log API keys, full prompts, resumes, or personal document contents.
-- Add authentication and per-user retrieval filters before accepting real public users.
+- Keep authentication and per-user retrieval filters on every data path.
 - Treat goals, accomplishments, retrieved documents, and other user-authored text as untrusted data, not system instructions.
 - Escape or structurally delimit untrusted profile context before including it in prompts.
 

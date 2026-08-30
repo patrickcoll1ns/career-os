@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { deleteDocumentAction } from "@/app/actions/documents";
+import { ConfirmDeleteControl } from "@/components/confirm-delete-control";
 import { DocumentUploadForm } from "@/components/document-upload-form";
 import { getDocuments, type CareerDocument } from "@/lib/documents";
 import { formatTimestamp } from "@/lib/format";
@@ -69,8 +71,8 @@ export default async function DocumentsPage() {
 
           {documents === null ? (
             <div className="mt-6 rounded-2xl border border-[#e1c9be] bg-[#fff8f4] p-5 text-sm leading-6 text-[#805744]">
-              Documents are unavailable. Start FastAPI, PostgreSQL, and ChromaDB,
-              then refresh this page.
+              Documents are unavailable. Start FastAPI and PostgreSQL, then
+              refresh this page.
             </div>
           ) : documents.length === 0 ? (
             <div className="mt-6 rounded-2xl border border-dashed border-[#c9d5cc] bg-white/70 p-8 text-center">
@@ -99,6 +101,13 @@ export default async function DocumentsPage() {
                   {document.error_message ? (
                     <p className="mt-3 text-sm leading-6 text-[#9a503c]">{document.error_message}</p>
                   ) : null}
+                  <ConfirmDeleteControl
+                    action={deleteDocumentAction}
+                    idField="documentId"
+                    id={document.id}
+                    label="document"
+                    confirmMessage="Remove this document permanently? Its extracted text, search index, and saved resume reviews are deleted with it."
+                  />
                 </li>
               ))}
             </ul>

@@ -48,9 +48,30 @@ def remove_values(path: Path, keys: set[str]) -> None:
         path.write_text("\n".join(filtered) + "\n", encoding="utf-8")
 
 
+# Settings that must exist locally for the fail-closed production defaults not
+# to block development. Missing keys are appended; existing values are kept.
+LOCAL_BACKEND_DEFAULTS = {
+    "ENVIRONMENT": "development",
+    "EXPOSE_API_DOCS": "true",
+    "DOCUMENT_STORAGE_BACKEND": "local",
+    "BACKEND_CORS_ORIGINS": "http://localhost:3000",
+    "VOYAGE_MODEL": "voyage-3.5",
+}
+OBSOLETE_BACKEND_KEYS = {
+    "CHROMA_HOST",
+    "CHROMA_PORT",
+    "CHROMA_COLLECTION",
+    "CHROMA_MAX_DISTANCE",
+}
+
+
 def main() -> None:
     ensure_file(BACKEND_ENV, ROOT / ".env.example")
     ensure_file(FRONTEND_ENV, ROOT / "frontend" / ".env.example")
+
+    remove_values(BACKEND_ENV, OBSOLETE_BACKEND_KEYS)
+    for key, value in LOCAL_BACKEND_DEFAULTS.items():
+        set_blank_value(BACKEND_ENV, key, value)
 
     backend_internal = read_value(BACKEND_ENV, "INTERNAL_AUTH_SECRET")
     frontend_internal = read_value(FRONTEND_ENV, "INTERNAL_AUTH_SECRET")
@@ -66,6 +87,7 @@ def main() -> None:
     set_blank_value(FRONTEND_ENV, "AUTH_SECRET", secrets.token_urlsafe(48))
     set_blank_value(FRONTEND_ENV, "AUTH_GOOGLE_ID", "")
     set_blank_value(FRONTEND_ENV, "AUTH_GOOGLE_SECRET", "")
+    set_blank_value(FRONTEND_ENV, "AUTH_ALLOWED_EMAILS", "")
     remove_values(FRONTEND_ENV, {"AUTH_GITHUB_ID", "AUTH_GITHUB_SECRET"})
 
     missing = [

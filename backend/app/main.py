@@ -15,6 +15,7 @@ from app.api.routes.interviews import router as interviews_router
 from app.api.routes.resume_reviews import router as resume_reviews_router
 from app.core.auth import require_user
 from app.core.config import settings
+from app.core.logging import RequestLoggingMiddleware, configure_logging
 from app.db.session import engine
 
 
@@ -40,6 +41,7 @@ async def lifespan(_application: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
+    configure_logging()
     application = FastAPI(
         title=settings.app_name,
         version="0.1.0",
@@ -50,14 +52,23 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json" if settings.expose_api_docs else None,
     )
 
+    # Starlette runs the most recently added middleware first, so request
+    # logging is registered last to wrap everything below it.
     application.add_middleware(SecurityHeadersMiddleware)
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
         allow_credentials=False,
         allow_methods=["GET", "POST", "PATCH", "DELETE"],
-        allow_headers=["Content-Type"],
+        allow_headers=[
+            "Content-Type",
+            "X-CareerOS-User",
+            "X-CareerOS-Timestamp",
+            "X-CareerOS-Signature",
+            "X-CareerOS-Content-SHA256",
+        ],
     )
+    application.add_middleware(RequestLoggingMiddleware)
     application.include_router(health_router)
     protected = [Depends(require_user)]
     application.include_router(goals_router, dependencies=protected)

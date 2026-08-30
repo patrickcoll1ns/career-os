@@ -1,6 +1,6 @@
 import anthropic
 
-from app.core.config import settings
+from app.core.config import reveal, settings
 
 # max_tokens caps thinking and reply text together. This request streams, so a
 # larger budget costs nothing extra and keeps long grounded replies from being
@@ -22,7 +22,7 @@ class AnthropicClient:
     ) -> str:
         try:
             async with anthropic.AsyncAnthropic(
-                api_key=settings.anthropic_api_key
+                api_key=reveal(settings.anthropic_api_key)
             ) as client:
                 async with client.messages.stream(
                     model=settings.anthropic_model,

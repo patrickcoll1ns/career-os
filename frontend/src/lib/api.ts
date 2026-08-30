@@ -1,3 +1,5 @@
+import { backendFetch } from "@/lib/backend-api";
+
 type HealthResponse = {
   status: "ok";
   service: string;
@@ -20,4 +22,3 @@ export async function getApiHealth(): Promise<HealthResponse | null> {
     return null;
   }
 }
-import { backendFetch } from "@/lib/backend-api";
