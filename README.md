@@ -102,6 +102,7 @@ make security-check
 Two maintenance commands are available once the app is running:
 
 ```bash
+make owners                           # list owner IDs and their record counts
 make reindex                          # rebuild embeddings from stored text
 make claim-owner OWNER=google:1234    # move pre-auth records to an account
 ```

@@ -3,7 +3,7 @@ VENV := backend/.venv
 VENV_BIN := $(VENV)/bin
 OWNER ?=
 
-.PHONY: setup configure database database-stop database-status migrate reindex claim-owner backend frontend backend-check frontend-check security-check check
+.PHONY: setup configure database database-stop database-status migrate owners reindex claim-owner backend frontend backend-check frontend-check security-check check
 
 setup:
 	$(PYTHON) -m venv $(VENV)
@@ -27,6 +27,10 @@ database-status:
 
 migrate:
 	cd backend && .venv/bin/alembic upgrade head
+
+# List owner IDs and how many records each holds.
+owners:
+	cd backend && .venv/bin/python -m app.cli owners
 
 # Rebuild document embeddings from stored extracted text.
 reindex:
