@@ -1,44 +1,43 @@
-# Fly.io configuration for the CareerOS FastAPI backend.
+# fly.toml app configuration file generated for careeros-api-red-thunder-4403 on 2026-09-01T00:17:34-04:00
 #
-# Lives beside the Dockerfile because Fly uses the directory it is run from as
-# the build context, and the Dockerfile's COPY paths are relative to backend/.
-# Deploy with: cd backend && fly deploy
-app = "careeros-api"
-primary_region = "iad"
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'careeros-api-red-thunder-4403'
+primary_region = 'iad'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
 [deploy]
-  # Migrations run once per release, before the new machines take traffic.
-  release_command = "alembic upgrade head"
+  release_command = 'alembic upgrade head'
 
 [env]
-  ENVIRONMENT = "production"
-  EXPOSE_API_DOCS = "false"
-  DOCUMENT_STORAGE_BACKEND = "s3"
-  PORT = "8000"
-  LOG_LEVEL = "INFO"
+  DOCUMENT_STORAGE_BACKEND = 's3'
+  ENVIRONMENT = 'production'
+  EXPOSE_API_DOCS = 'false'
+  LOG_LEVEL = 'INFO'
+  PORT = '8000'
 
 [http_service]
   internal_port = 8000
   force_https = true
-  auto_stop_machines = "suspend"
+  auto_stop_machines = 'suspend'
   auto_start_machines = true
   min_machines_running = 1
 
   [http_service.concurrency]
-    type = "requests"
-    soft_limit = 40
+    type = 'requests'
     hard_limit = 60
+    soft_limit = 40
 
   [[http_service.checks]]
-    grace_period = "10s"
-    interval = "30s"
-    method = "GET"
-    timeout = "5s"
-    path = "/health"
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '10s'
+    method = 'GET'
+    path = '/health'
 
 [[vm]]
-  size = "shared-cpu-1x"
-  memory = "512mb"
+  size = 'shared-cpu-1x'
+  memory = '512mb'
