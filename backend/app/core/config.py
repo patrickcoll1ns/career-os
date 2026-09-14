@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlsplit
 
 from pydantic import SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -88,6 +89,25 @@ class Settings(BaseSettings):
             )
         if self.document_storage_backend == "s3" and not self.s3_bucket:
             raise ValueError("S3_BUCKET is required when DOCUMENT_STORAGE_BACKEND=s3.")
+        if self.document_storage_backend == "s3" and self.s3_endpoint_url:
+            endpoint = self.s3_endpoint_url
+            parsed_endpoint = urlsplit(endpoint)
+            has_forbidden_characters = any(
+                character in endpoint for character in ('<', '>', '"', "'", " ")
+            )
+            if (
+                has_forbidden_characters
+                or parsed_endpoint.scheme != "https"
+                or not parsed_endpoint.hostname
+                or parsed_endpoint.username is not None
+                or parsed_endpoint.password is not None
+                or parsed_endpoint.query
+                or parsed_endpoint.fragment
+            ):
+                raise ValueError(
+                    "S3_ENDPOINT_URL must be a valid HTTPS URL without placeholder "
+                    "brackets, quotes, credentials, query parameters, or fragments."
+                )
         insecure_origins = [
             origin for origin in self.cors_origins if not origin.startswith("https://")
         ]
