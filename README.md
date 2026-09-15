@@ -11,8 +11,7 @@ and the Anthropic and Voyage AI APIs — with Google authentication, per-user da
 isolation, and a documented production deployment.
 
 **[Try it live](https://career-os-sage-ten.vercel.app)** — sign in with Google.
-The deployment may restrict sign-in to an allowlist of accounts; if yours is not
-on it, the [local setup](#one-time-setup) below runs the same application.
+Or, the [local setup](#one-time-setup) below runs the same application.
 
 ## Features
 
