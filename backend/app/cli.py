@@ -8,7 +8,7 @@ import argparse
 import asyncio
 import sys
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 
 from app.core.auth import DEVELOPMENT_OWNER_ID, owner_context
 from app.db.session import async_session_factory, engine
@@ -54,6 +54,23 @@ async def reindex_documents() -> int:
     return reindexed
 
 
+async def list_owners() -> list[tuple[str, int]]:
+    """Report which owner IDs hold records, so one can be named for a claim.
+
+    Owner IDs are deliberately absent from the request logs, so this is how a
+    freshly signed-in account finds the ID to migrate records to.
+    """
+    totals: dict[str, int] = {}
+    async with async_session_factory() as session:
+        for model in OWNED_MODELS:
+            result = await session.execute(
+                select(model.owner_id, func.count()).group_by(model.owner_id)
+            )
+            for owner_id, count in result.all():
+                totals[owner_id] = totals.get(owner_id, 0) + count
+    return sorted(totals.items(), key=lambda item: item[1], reverse=True)
+
+
 async def claim_owner(new_owner_id: str, previous_owner_id: str) -> int:
     """Reassign pre-authentication records to a real signed-in account."""
     moved = 0
@@ -73,6 +90,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="app.cli", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("reindex", help="Rebuild document embeddings.")
+    commands.add_parser(
+        "owners", help="List owner IDs and how many records each holds."
+    )
 
     claim = commands.add_parser(
         "claim-owner", help="Move records to an authenticated owner ID."
@@ -93,9 +113,30 @@ def build_parser() -> argparse.ArgumentParser:
 
 async def _run(arguments: argparse.Namespace) -> int:
     try:
+        try:
+            async with engine.connect():
+                pass
+        except Exception as error:
+            # These commands are run by a person during a deployment; a stack
+            # trace for an unreachable database helps nobody.
+            print(
+                "Could not reach the database. Check DATABASE_URL, and that it "
+                f"uses the postgresql+asyncpg:// driver.\n  {type(error).__name__}",
+                file=sys.stderr,
+            )
+            return 1
+
         if arguments.command == "reindex":
             count = await reindex_documents()
             print(f"Reindexed {count} document(s).")
+            return 0
+
+        if arguments.command == "owners":
+            owners = await list_owners()
+            if not owners:
+                print("No records yet. Sign in and save something first.")
+            for owner_id, count in owners:
+                print(f"{owner_id}\t{count} record(s)")
             return 0
 
         moved = await claim_owner(arguments.owner, arguments.previous_owner)

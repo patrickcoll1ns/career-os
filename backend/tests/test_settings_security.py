@@ -56,6 +56,28 @@ def test_production_requires_a_bucket_for_object_storage() -> None:
         )
 
 
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        "<https://accountid.r2.cloudflarestorage.com>",
+        '"https://accountid.r2.cloudflarestorage.com"',
+        "http://accountid.r2.cloudflarestorage.com",
+    ],
+)
+def test_production_rejects_a_malformed_object_storage_endpoint(
+    endpoint: str,
+) -> None:
+    with pytest.raises(ValidationError, match="S3_ENDPOINT_URL"):
+        Settings(
+            environment="production",
+            internal_auth_secret=STRONG_SECRET,
+            backend_cors_origins="https://careeros.example.com",
+            document_storage_backend="s3",
+            s3_bucket="careeros-documents",
+            s3_endpoint_url=endpoint,
+        )
+
+
 def test_a_complete_production_configuration_is_accepted() -> None:
     settings = Settings(
         environment="production",

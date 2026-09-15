@@ -77,11 +77,14 @@ Vercel only. Use different values from your local `.env` files.
 
 ## 5. Deploy the backend to Fly
 
-`fly.toml` in the repository root already pins the safe values:
+`backend/fly.toml` already pins the safe values:
 `ENVIRONMENT=production`, `EXPOSE_API_DOCS=false`, and
 `DOCUMENT_STORAGE_BACKEND=s3`. Everything secret is set separately:
 
+Run these from `backend/`, which is the build context the Dockerfile expects:
+
 ```bash
+cd backend
 fly launch --no-deploy --copy-config --name careeros-api
 fly secrets set \
   INTERNAL_AUTH_SECRET="…" \
@@ -140,8 +143,17 @@ frontend to your own multi-instance hosting, set a stable
 
 ## 7. First-run tasks
 
-Move any pre-authentication records to your real account. Sign in once, read the
-owner ID from the backend logs (`google:<numeric-id>`), then:
+Move any pre-authentication records to your real account. Owner IDs are
+deliberately absent from the logs, so ask the database which ones exist. Sign in
+once and save a goal, then:
+
+```bash
+cd backend
+fly ssh console -C "python -m app.cli owners"
+```
+
+That prints each owner ID and how many records it holds — your new
+`google:<numeric-id>` beside the `development:local` rows it should absorb:
 
 ```bash
 fly ssh console -C "python -m app.cli claim-owner --owner google:1234567890"

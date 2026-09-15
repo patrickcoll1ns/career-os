@@ -8,10 +8,12 @@ The simplest setup is from the repository root:
 
 ```bash
 make setup
-cp .env.example .env
 make database
 make backend
 ```
+
+`make setup` creates the ignored `.env` file and its local secrets. It never
+overwrites values that already exist.
 
 The API is available at [http://localhost:8000](http://localhost:8000), with interactive documentation at [http://localhost:8000/docs](http://localhost:8000/docs).
 
@@ -51,6 +53,19 @@ Chat endpoints:
 - `POST /chat/conversations/{conversation_id}/messages` sends a user message and returns the conversation with Claude's reply appended.
 
 Live replies require `ANTHROPIC_API_KEY` in the ignored root `.env` file. Without a valid key, sending a message returns `502 Bad Gateway` and no partial user-only exchange is saved. `ANTHROPIC_MODEL` defaults to `claude-sonnet-5` and can be overridden locally.
+
+Document endpoints:
+
+- `POST /documents` uploads a PDF, DOCX, or TXT file of up to 5 MB, then
+  extracts, chunks, embeds, and indexes its text.
+- `GET /documents` lists uploaded documents with their processing status.
+- `DELETE /documents/{document_id}` permanently removes a document, its stored
+  bytes, its embeddings, and any resume reviews built from it.
+
+Uploads are validated by MIME type, extension, file signature, and size before
+any processing. Indexing requires `VOYAGE_API_KEY`; without it a document still
+reaches `ready` but contributes no retrievable chunks. Rejected uploads return
+`413 Content Too Large` for size and `415 Unsupported Media Type` for type.
 
 Resume-review endpoints:
 
