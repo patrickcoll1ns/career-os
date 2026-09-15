@@ -93,7 +93,7 @@ class Settings(BaseSettings):
             endpoint = self.s3_endpoint_url
             parsed_endpoint = urlsplit(endpoint)
             has_forbidden_characters = any(
-                character in endpoint for character in ('<', '>', '"', "'", " ")
+                character in endpoint for character in ("<", ">", '"', "'", " ")
             )
             if (
                 has_forbidden_characters
