@@ -10,6 +10,9 @@ on:
 permissions:
   contents: read
   security-events: write
+  # Private repositories additionally require read access to Actions metadata,
+  # which codeql-action/analyze reads when it attaches results to the run.
+  actions: read
 
 jobs:
   analyze:
